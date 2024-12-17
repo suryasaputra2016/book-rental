@@ -1,0 +1,50 @@
+package config
+
+import (
+	"fmt"
+	"log"
+	"os"
+
+	_ "github.com/joho/godotenv/autoload"
+	"github.com/suryasaputra2016/book-rental/entities"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+)
+
+// ConnectDB connect to postgres databse using gorm and return db connection
+func ConnectDB() *gorm.DB {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PORT"),
+	)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Failed to connect to the database: %v", err)
+	}
+
+	// migrate database
+	migrateDatabase(db)
+
+	log.Println("Database connected successfully.")
+	return db
+}
+
+// migrateDatabase do database migration
+func migrateDatabase(db *gorm.DB) {
+	fmt.Println("Running migration")
+	err := db.AutoMigrate(
+		entities.User{},
+	)
+	if err != nil {
+		log.Fatalf("Error running migrations: %v", err)
+	}
+
+	Session := db.Session(&gorm.Session{PrepareStmt: true})
+	if Session != nil {
+		fmt.Println("Migration successful")
+	}
+}
