@@ -7,7 +7,7 @@ import (
 
 // user repository interface
 type UserRepo interface {
-	FindUser(id int) (*entity.User, error)
+	FindUserByEmail(email string) (*entity.User, error)
 	AddUser(userPtr *entity.User) (*entity.User, error)
 	EditUser(userPtr *entity.User) (entity.User, error)
 }
@@ -18,9 +18,9 @@ type userRepo struct {
 }
 
 // find user with id
-func (ur userRepo) FindUser(id int) (*entity.User, error) {
+func (ur *userRepo) FindUserByEmail(email string) (*entity.User, error) {
 	var userPtr = new(entity.User)
-	result := ur.db.First(userPtr, id)
+	result := ur.db.Where("email = ?", email).First(userPtr)
 	if result.Error == nil {
 		return nil, result.Error
 	}
@@ -28,7 +28,7 @@ func (ur userRepo) FindUser(id int) (*entity.User, error) {
 }
 
 // add user to database
-func (ur userRepo) AddUser(userPtr *entity.User) (*entity.User, error) {
+func (ur *userRepo) AddUser(userPtr *entity.User) (*entity.User, error) {
 	result := ur.db.Create(userPtr)
 	if result.Error == nil {
 		return nil, result.Error
@@ -37,7 +37,7 @@ func (ur userRepo) AddUser(userPtr *entity.User) (*entity.User, error) {
 }
 
 // edit user in database
-func (ur userRepo) EditUser(userPtr *entity.User) (*entity.User, error) {
+func (ur *userRepo) EditUser(userPtr *entity.User) (*entity.User, error) {
 	result := ur.db.Save(userPtr)
 	if result.Error == nil {
 		return nil, result.Error
