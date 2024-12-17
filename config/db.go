@@ -6,7 +6,7 @@ import (
 	"os"
 
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/suryasaputra2016/book-rental/entities"
+	"github.com/suryasaputra2016/book-rental/entity"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -27,7 +27,7 @@ func ConnectDB() *gorm.DB {
 	}
 
 	// migrate database
-	migrateDatabase(db)
+	// migrateDatabase(db)
 
 	log.Println("Database connected successfully.")
 	return db
@@ -37,7 +37,7 @@ func ConnectDB() *gorm.DB {
 func migrateDatabase(db *gorm.DB) {
 	fmt.Println("Running migration")
 	err := db.AutoMigrate(
-		entities.User{},
+		entity.User{},
 	)
 	if err != nil {
 		log.Fatalf("Error running migrations: %v", err)
