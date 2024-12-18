@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/suryasaputra2016/book-rental/config"
+	"github.com/suryasaputra2016/book-rental/middlewares"
 	"github.com/suryasaputra2016/book-rental/repo"
 	"github.com/suryasaputra2016/book-rental/service"
 	"github.com/suryasaputra2016/book-rental/utils"
@@ -27,7 +28,7 @@ func main() {
 	// routes
 	e.POST("/register", userService.CreateUser)
 	e.POST("/login", userService.Login)
-	// e.POST("/topup", userService.Login)
+	e.PUT("/topup", userService.Topup, middlewares.Authorization())
 
 	// start server
 	e.Logger.Fatal(e.Start(utils.GetPort()))

@@ -7,6 +7,7 @@ import (
 
 // user repository interface
 type UserRepo interface {
+	FindUserByID(id int) (*entity.User, error)
 	FindUserByEmail(email string) (*entity.User, error)
 	AddUser(userPtr *entity.User) error
 	EditUser(userPtr *entity.User) (*entity.User, error)
@@ -22,6 +23,16 @@ func NewUserRepo(db *gorm.DB) *userRepo {
 }
 
 // find user with id
+func (ur *userRepo) FindUserByID(id int) (*entity.User, error) {
+	var userPtr = new(entity.User)
+	result := ur.db.First(userPtr, id)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return userPtr, nil
+}
+
+// find user with email
 func (ur *userRepo) FindUserByEmail(email string) (*entity.User, error) {
 	var userPtr = new(entity.User)
 	result := ur.db.Where("email = ?", email).First(userPtr)

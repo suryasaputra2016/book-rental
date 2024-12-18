@@ -28,3 +28,9 @@ type LoginResponse struct {
 	Message string `json:"message" validate:"required, message"`
 	Token   string `json:"token" validate:"required, token"`
 }
+
+type TopUpRequest struct {
+	TopupAmount float32 `json:"topup_amount" validate:"required, topup_amount"`
+}
+
+type TopUpResponse CreateUserRepsonse

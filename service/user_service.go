@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/suryasaputra2016/book-rental/entity"
-	"github.com/suryasaputra2016/book-rental/middleware"
+	"github.com/suryasaputra2016/book-rental/middlewares"
 	"github.com/suryasaputra2016/book-rental/repo"
 	"github.com/suryasaputra2016/book-rental/utils"
 )
@@ -14,7 +14,7 @@ import (
 type UserService interface {
 	CreateUser(echo.Context) error
 	Login(echo.Context) error
-	TopUp(echo.Context) error
+	Topup(echo.Context) error
 }
 
 // user repository implementation with database connection
@@ -87,7 +87,7 @@ func (us *userService) Login(c echo.Context) error {
 	var userPtr *entity.User
 	var err error
 	if userPtr, err = us.ur.FindUserByEmail(req.Email); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "username cannot be found")
+		return echo.NewHTTPError(http.StatusBadRequest, "email cannot be found")
 	}
 
 	// check password
@@ -96,7 +96,7 @@ func (us *userService) Login(c echo.Context) error {
 	}
 
 	// generate token
-	t, err := middleware.GenerateTokenString(int(userPtr.ID), userPtr.Email)
+	t, err := middlewares.GenerateTokenString(int(userPtr.ID), userPtr.Email)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "couldn't generate token")
 	}
@@ -109,6 +109,48 @@ func (us *userService) Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// func (us *userService) TopUp(c echo.Context) error {
+func (us *userService) Topup(c echo.Context) error {
+	// get res
+	// bind request body
+	var req entity.TopUpRequest
+	if c.Bind(&req) != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "JSON request is invalid")
+	}
 
-// }
+	// get user id
+	userId := middlewares.GetUserID(c.Get("user"))
+
+	// find user with id
+	var userPtr *entity.User
+	var err error
+	if userPtr, err = us.ur.FindUserByID(userId); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "id cannot be found")
+	}
+
+	// xendit
+
+	//validate req.Amount
+	if req.TopupAmount <= 0.0 {
+		return echo.NewHTTPError(http.StatusInternalServerError, "top up amount must be positive float")
+	}
+
+	// update user deposit amount
+	userPtr.DepositAmount += req.TopupAmount
+
+	// save to database
+	if userPtr, err = us.ur.EditUser(userPtr); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "cannot update user")
+	}
+
+	// define and send response
+	res := entity.TopUpResponse{
+		Message: "deposit amount is successfully updated",
+		NewUserData: entity.CreateUserResponseData{
+			FirstName:     userPtr.FirstName,
+			LastName:      userPtr.LastName,
+			Email:         userPtr.Email,
+			DepositAmount: userPtr.DepositAmount,
+		},
+	}
+	return c.JSON(http.StatusOK, res)
+}
