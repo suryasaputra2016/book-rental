@@ -51,6 +51,8 @@ func (us *userService) CreateUser(c echo.Context) error {
 
 	//define new user
 	newUser := entity.User{
+		FirstName:     req.FirstName,
+		LastName:      req.LastName,
 		Email:         req.Email,
 		PasswordHash:  passwordHash,
 		DepositAmount: 0.0,
@@ -65,6 +67,8 @@ func (us *userService) CreateUser(c echo.Context) error {
 	res := &entity.CreateUserRepsonse{
 		Message: "User successfully created",
 		NewUserData: entity.CreateUserResponseData{
+			FirstName:     newUser.FirstName,
+			LastName:      newUser.LastName,
 			Email:         newUser.Email,
 			DepositAmount: newUser.DepositAmount,
 		},

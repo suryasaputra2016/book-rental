@@ -18,28 +18,34 @@ func main() {
 
 	e := echo.New()
 
-	e.HTTPErrorHandler = func(err error, c echo.Context) {
-		code := http.StatusInternalServerError
-		msg := "internal server error"
-		if he, ok := err.(*echo.HTTPError); ok {
-			code = he.Code
-			msg = he.Message.(string)
-		}
-		c.JSON(code, map[string]string{
-			"error": msg,
-		})
-	}
+	// error handler
+	e.HTTPErrorHandler = httpErrorHandler
 
+	// middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	// routes
 	e.POST("/register", userservice.CreateUser)
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080" // Default port
 	}
-	err := e.Start(":" + port)
-	if err != nil {
+	if err := e.Start(":" + port); err != nil {
 		e.Logger.Fatal(err)
 	}
+}
+
+// http error handler function
+func httpErrorHandler(err error, c echo.Context) {
+	code := http.StatusInternalServerError
+	msg := "internal server error"
+	if he, ok := err.(*echo.HTTPError); ok {
+		code = he.Code
+		msg = he.Message.(string)
+	}
+	c.JSON(code, map[string]string{
+		"error": msg,
+	})
 }

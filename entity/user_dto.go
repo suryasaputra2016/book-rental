@@ -1,8 +1,10 @@
 package entity
 
 type CreateUserRequest struct {
-	Email    string `json:"email" validate:"required, email"`
-	Password string `json:"password" validate:"required, password"`
+	FirstName string `json:"first_name" validate:"required, first_name"`
+	LastName  string `json:"last_name" validate:"required, last_name"`
+	Email     string `json:"email" validate:"required, email"`
+	Password  string `json:"password" validate:"required, password"`
 }
 
 type CreateUserRepsonse struct {
@@ -11,6 +13,8 @@ type CreateUserRepsonse struct {
 }
 
 type CreateUserResponseData struct {
+	FirstName     string  `json:"first_name" validate:"required, first_name"`
+	LastName      string  `json:"last_name" validate:"required, last_name"`
 	Email         string  `json:"email" validate:"required, email"`
 	DepositAmount float32 `json:"deposit_amount" validate:"required, deposit_amount"`
 }
