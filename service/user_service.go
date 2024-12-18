@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -13,8 +12,9 @@ import (
 )
 
 type UserService interface {
-	CreateUser(*entity.CreateUserRequest) error
-	Login(*entity.LoginRequest) (string, error)
+	CreateUser(echo.Context) error
+	Login(echo.Context) error
+	TopUp(echo.Context) error
 }
 
 // user repository implementation with database connection
@@ -63,9 +63,9 @@ func (us *userService) CreateUser(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprint(err))
 	}
 
-	//define response
+	//define and send response
 	res := &entity.CreateUserRepsonse{
-		Message: "User successfully created",
+		Message: "user successfully created",
 		NewUserData: entity.CreateUserResponseData{
 			FirstName:     newUser.FirstName,
 			LastName:      newUser.LastName,
@@ -73,32 +73,42 @@ func (us *userService) CreateUser(c echo.Context) error {
 			DepositAmount: newUser.DepositAmount,
 		},
 	}
-
-	// return response
 	return c.JSON(http.StatusCreated, *res)
 }
 
-func (us *userService) Login(reqPtr *entity.LoginRequest) (*string, error) {
+func (us *userService) Login(c echo.Context) error {
+	// bind request body
+	var req entity.LoginRequest
+	if c.Bind(&req) != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "JSON request is invalid")
+	}
 
-	// check email and get member info
+	// check email and get user info
 	var userPtr *entity.User
-	userPtr, err := us.ur.FindUserByEmail(reqPtr.Email)
-	if err != nil {
-		return nil, errors.New("username cannot be found")
+	var err error
+	if userPtr, err = us.ur.FindUserByEmail(req.Email); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "username cannot be found")
 	}
 
 	// check password
-	err = utils.CheckPassword(reqPtr.Password, userPtr.PasswordHash)
-	if err != nil {
-		return nil, errors.New("password doesn't match")
+	if utils.CheckPassword(req.Password, userPtr.PasswordHash) != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "password doesn't match")
 	}
 
 	// generate token
 	t, err := middleware.GenerateTokenString(int(userPtr.ID), userPtr.Email)
 	if err != nil {
-		return nil, errors.New("couldn't generate token")
+		return echo.NewHTTPError(http.StatusInternalServerError, "couldn't generate token")
 	}
 
-	// send token as response
-	return &t, nil
+	// define and send response
+	res := entity.LoginResponse{
+		Message: "login successful",
+		Token:   t,
+	}
+	return c.JSON(http.StatusOK, res)
 }
+
+// func (us *userService) TopUp(c echo.Context) error {
+
+// }

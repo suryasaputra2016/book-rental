@@ -23,3 +23,8 @@ type LoginRequest struct {
 	Email    string `json:"email" validate:"required, email"`
 	Password string `json:"password" validate:"required, password"`
 }
+
+type LoginResponse struct {
+	Message string `json:"message" validate:"required, message"`
+	Token   string `json:"token" validate:"required, token"`
+}

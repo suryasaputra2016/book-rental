@@ -10,7 +10,7 @@ type User struct {
 	Email         string  `gorm:"type:varchar(100);not null;unique"`
 	PasswordHash  string  `gorm:"type:text;not null"`
 	DepositAmount float32 `gorm:"type:decimal(15,2); default:0.0"`
-	BookCopies    []BookCopy
+	// BookCopies    []BookCopy
 }
 
 // book entity
@@ -19,7 +19,7 @@ type Book struct {
 	ISBN       string  `gorm:"type:varchar(13);not null; unique"`
 	Title      string  `gorm:"type:varchar(255);not null"`
 	Author     string  `gorm:"type:varchar(255);not null"`
-	Category   string  `gorm:"type:varchar(255);not null"` //comic, novel,biography, art, textbook
+	Category   string  `gorm:"type:varchar(50);not null"` //comic, novel,biography, art, textbook
 	RentalCost float32 `gorm:"type:decimal(15,2);not null"`
 	BookCopies []BookCopy
 }
@@ -29,7 +29,7 @@ type BookCopy struct {
 	ID         uint `gorm:"primaryKey"`
 	BookID     uint
 	CopyNumber int    `gorm:"not null"`
-	Status     string `gorm:"type:varchar(255);not null; default:available"` //available, rented, in repair
+	Status     string `gorm:"type:varchar(10);not null; default:available"` //available, rented, in repair
 }
 
 // rental history
@@ -37,6 +37,6 @@ type RentalHistory struct {
 	ID        uint `gorm:"primaryKey"`
 	UserID    uint
 	BookID    uint
-	Type      string // rent, return
+	Type      string `gorm:"type:varchar(10);not null"` // rent, return
 	CreatedAt time.Time
 }

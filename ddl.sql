@@ -29,7 +29,7 @@ INSERT INTO book_copies (book_id, copy_number, status) VALUES
 (1, 2, 'available'),
 
 -- Superhero Saga (ID: 2)
-(2, 1, 'available'),
+(2, 1, 'in repair'),
 
 -- Mystery Novel (ID: 3)
 (3, 1, 'available'),
