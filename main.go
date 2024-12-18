@@ -31,6 +31,7 @@ func main() {
 	e.POST("/register", userService.CreateUser)
 	e.POST("/login", userService.Login)
 	e.PUT("/topup", userService.Topup, middlewares.Authorization())
+	e.GET("/rents", userService.ShowRents, middlewares.Authorization())
 	e.POST("/rentbook", bookService.RentBook, middlewares.Authorization())
 
 	// start server

@@ -15,6 +15,7 @@ type UserService interface {
 	CreateUser(echo.Context) error
 	Login(echo.Context) error
 	Topup(echo.Context) error
+	ShowRents(echo.Context) error
 }
 
 // user repository implementation with database connection
@@ -152,5 +153,35 @@ func (us *userService) Topup(c echo.Context) error {
 			DepositAmount: userPtr.DepositAmount,
 		},
 	}
+	return c.JSON(http.StatusOK, res)
+}
+
+func (us *userService) ShowRents(c echo.Context) error {
+	// get user together with book and copy
+	userId := middlewares.GetUserID(c.Get("user"))
+	var userPtr *entity.User
+	var err error
+	if userPtr, err = us.ur.FindUserByID(userId); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "user cannot be found")
+	}
+
+	// define res
+	var rentedBooks []entity.RentedBook
+	for _, copy := range userPtr.BookCopies {
+		rentedBook := entity.RentedBook{
+			ISBN:       copy.Book.ISBN,
+			Title:      copy.Book.Title,
+			Author:     copy.Book.Author,
+			Category:   copy.Book.Category,
+			CopyNumber: copy.CopyNumber,
+		}
+		rentedBooks = append(rentedBooks, rentedBook)
+	}
+
+	res := entity.ShowRentsResponse{
+		Message:     "Books currently being rented",
+		RentedBooks: rentedBooks,
+	}
+
 	return c.JSON(http.StatusOK, res)
 }

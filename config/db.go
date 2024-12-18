@@ -40,6 +40,7 @@ func migrateDatabase(db *gorm.DB) {
 		entity.User{},
 		entity.Book{},
 		entity.BookCopy{},
+		entity.RentalHistory{},
 	)
 	if err != nil {
 		log.Fatalf("Error running migrations: %v", err)
