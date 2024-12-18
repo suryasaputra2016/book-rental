@@ -9,12 +9,16 @@ import (
 type UserRepo interface {
 	FindUserByEmail(email string) (*entity.User, error)
 	AddUser(userPtr *entity.User) (*entity.User, error)
-	EditUser(userPtr *entity.User) (entity.User, error)
+	EditUser(userPtr *entity.User) (*entity.User, error)
 }
 
 // user repository implementation with database connection
 type userRepo struct {
 	db *gorm.DB
+}
+
+func NewUserRepo(db *gorm.DB) *userRepo {
+	return &userRepo{db: db}
 }
 
 // find user with id

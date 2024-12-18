@@ -2,14 +2,18 @@ package service
 
 import (
 	"errors"
+	"net/http"
 
+	"github.com/labstack/echo/v4"
 	"github.com/suryasaputra2016/book-rental/entity"
+	"github.com/suryasaputra2016/book-rental/middleware"
 	"github.com/suryasaputra2016/book-rental/repo"
 	"github.com/suryasaputra2016/book-rental/utils"
 )
 
 type UserService interface {
-	CreateUser(*entity.CreateUserRequest) (*entity.User, error)
+	CreateUser(*entity.CreateUserRequest) error
+	Login(*entity.LoginRequest) (string, error)
 }
 
 // user repository implementation with database connection
@@ -17,33 +21,39 @@ type userService struct {
 	ur repo.UserRepo
 }
 
-func (us *userService) CreateUser(userPtr *entity.CreateUserRequest) (*entity.User, error) {
-	// email string validation
-	if !utils.IsEmailStringValid(userPtr.Email) {
-		return nil, errors.New("email is not well formatted")
+func NewUserService(ur repo.UserRepo) *userService {
+	return &userService{ur: ur}
+}
+
+func (us *userService) CreateUser(c echo.Context) error {
+	// bind request body
+	var req entity.CreateUserRequest
+	err := c.Bind(&req)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{"message": "JSON request is invalid"})
 	}
 
-	// password string validation
-	err := utils.IsPasswordGood(userPtr.Password)
+	// email and password  validation
+	err = utils.IsEmailandPasswordFine(req.Email, req.Password)
 	if err != nil {
-		return nil, err
+		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{"message": err})
 	}
 
 	// check email if it already exists
-	_, err = us.ur.FindUserByEmail(userPtr.Email)
-	if err != nil {
-		return nil, errors.New("email is already in use")
+	_, err = us.ur.FindUserByEmail(req.Email)
+	if err == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "email is already in use")
 	}
 
 	// hash password
-	passwordHash, err := utils.GenerateHash(userPtr.Password)
+	passwordHash, err := utils.GenerateHash(req.Password)
 	if err != nil {
-		return nil, errors.New("couldn't hash password")
+		return echo.NewHTTPError(http.StatusInternalServerError, "couldn't hash password")
 	}
 
 	//define new user
 	newUserPtr := &entity.User{
-		Email:         userPtr.Email,
+		Email:         req.Email,
 		PasswordHash:  passwordHash,
 		DepositAmount: 0.0,
 	}
@@ -51,7 +61,33 @@ func (us *userService) CreateUser(userPtr *entity.CreateUserRequest) (*entity.Us
 	// add new user to database and return
 	newUserPtr, err = us.ur.AddUser(newUserPtr)
 	if err != nil {
-		return nil, err
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	return newUserPtr, err
+
+	return c.JSON(http.StatusCreated, *newUserPtr)
+}
+
+func (us *userService) Login(reqPtr *entity.LoginRequest) (*string, error) {
+
+	// check email and get member info
+	var userPtr *entity.User
+	userPtr, err := us.ur.FindUserByEmail(reqPtr.Email)
+	if err != nil {
+		return nil, errors.New("username cannot be found")
+	}
+
+	// check password
+	err = utils.CheckPassword(reqPtr.Password, userPtr.PasswordHash)
+	if err != nil {
+		return nil, errors.New("password doesn't match")
+	}
+
+	// generate token
+	t, err := middleware.GenerateTokenString(int(userPtr.ID), userPtr.Email)
+	if err != nil {
+		return nil, errors.New("couldn't generate token")
+	}
+
+	// send token as response
+	return &t, nil
 }

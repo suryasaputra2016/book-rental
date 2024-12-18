@@ -6,14 +6,24 @@ import (
 	"unicode"
 )
 
+// test email and password
+func IsEmailandPasswordFine(email, password string) error {
+	if !isEmailStringValid(email) {
+		return errors.New("email is not well formatted")
+	}
+	err := isPasswordGood(password)
+	return err
+
+}
+
 // IsEmailStringValid returns boolean of whether the string is in email format
-func IsEmailStringValid(email string) bool {
+func isEmailStringValid(email string) bool {
 	emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
 	return emailRegex.MatchString(email)
 }
 
 // IsPasswordGood returns booleans of good password conditions
-func IsPasswordGood(password string) error {
+func isPasswordGood(password string) error {
 	var containNumber, containUpperCase, containPunctuation, eightOrMore bool
 	index := 0
 	for _, c := range password {
