@@ -15,6 +15,8 @@ func main() {
 	db := config.ConnectDB()
 	userRepo := repo.NewUserRepo(db)
 	userService := service.NewUserService(userRepo)
+	bookRepo := repo.NewBookRepo(db)
+	bookService := service.NewBookService(bookRepo, userRepo)
 
 	e := echo.New()
 
@@ -29,6 +31,7 @@ func main() {
 	e.POST("/register", userService.CreateUser)
 	e.POST("/login", userService.Login)
 	e.PUT("/topup", userService.Topup, middlewares.Authorization())
+	e.POST("/rentbook", bookService.RentBook, middlewares.Authorization())
 
 	// start server
 	e.Logger.Fatal(e.Start(utils.GetPort()))

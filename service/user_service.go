@@ -66,7 +66,7 @@ func (us *userService) CreateUser(c echo.Context) error {
 	//define and send response
 	res := &entity.CreateUserRepsonse{
 		Message: "user successfully created",
-		NewUserData: entity.CreateUserResponseData{
+		UserData: entity.UserResponseData{
 			FirstName:     newUser.FirstName,
 			LastName:      newUser.LastName,
 			Email:         newUser.Email,
@@ -145,7 +145,7 @@ func (us *userService) Topup(c echo.Context) error {
 	// define and send response
 	res := entity.TopUpResponse{
 		Message: "deposit amount is successfully updated",
-		NewUserData: entity.CreateUserResponseData{
+		UserData: entity.UserResponseData{
 			FirstName:     userPtr.FirstName,
 			LastName:      userPtr.LastName,
 			Email:         userPtr.Email,

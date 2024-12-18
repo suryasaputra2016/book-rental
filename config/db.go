@@ -38,6 +38,8 @@ func migrateDatabase(db *gorm.DB) {
 	fmt.Println("Running migration")
 	err := db.AutoMigrate(
 		entity.User{},
+		entity.Book{},
+		entity.BookCopy{},
 	)
 	if err != nil {
 		log.Fatalf("Error running migrations: %v", err)
