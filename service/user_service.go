@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -28,20 +29,17 @@ func NewUserService(ur repo.UserRepo) *userService {
 func (us *userService) CreateUser(c echo.Context) error {
 	// bind request body
 	var req entity.CreateUserRequest
-	err := c.Bind(&req)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{"message": "JSON request is invalid"})
+	if c.Bind(&req) != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "JSON request is invalid")
 	}
 
 	// email and password  validation
-	err = utils.IsEmailandPasswordFine(req.Email, req.Password)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{"message": err})
+	if err := utils.IsEmailandPasswordFine(req.Email, req.Password); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprint(err))
 	}
 
 	// check email if it already exists
-	_, err = us.ur.FindUserByEmail(req.Email)
-	if err == nil {
+	if _, err := us.ur.FindUserByEmail(req.Email); err == nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "email is already in use")
 	}
 
@@ -52,19 +50,28 @@ func (us *userService) CreateUser(c echo.Context) error {
 	}
 
 	//define new user
-	newUserPtr := &entity.User{
+	newUser := entity.User{
 		Email:         req.Email,
 		PasswordHash:  passwordHash,
 		DepositAmount: 0.0,
 	}
 
 	// add new user to database and return
-	newUserPtr, err = us.ur.AddUser(newUserPtr)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	if us.ur.AddUser(&newUser) != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprint(err))
 	}
 
-	return c.JSON(http.StatusCreated, *newUserPtr)
+	//define response
+	res := &entity.CreateUserRepsonse{
+		Message: "User successfully created",
+		NewUserData: entity.CreateUserResponseData{
+			Email:         newUser.Email,
+			DepositAmount: newUser.DepositAmount,
+		},
+	}
+
+	// return response
+	return c.JSON(http.StatusCreated, *res)
 }
 
 func (us *userService) Login(reqPtr *entity.LoginRequest) (*string, error) {

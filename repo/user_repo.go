@@ -8,7 +8,7 @@ import (
 // user repository interface
 type UserRepo interface {
 	FindUserByEmail(email string) (*entity.User, error)
-	AddUser(userPtr *entity.User) (*entity.User, error)
+	AddUser(userPtr *entity.User) error
 	EditUser(userPtr *entity.User) (*entity.User, error)
 }
 
@@ -25,25 +25,25 @@ func NewUserRepo(db *gorm.DB) *userRepo {
 func (ur *userRepo) FindUserByEmail(email string) (*entity.User, error) {
 	var userPtr = new(entity.User)
 	result := ur.db.Where("email = ?", email).First(userPtr)
-	if result.Error == nil {
+	if result.Error != nil {
 		return nil, result.Error
 	}
 	return userPtr, nil
 }
 
 // add user to database
-func (ur *userRepo) AddUser(userPtr *entity.User) (*entity.User, error) {
+func (ur *userRepo) AddUser(userPtr *entity.User) error {
 	result := ur.db.Create(userPtr)
-	if result.Error == nil {
-		return nil, result.Error
+	if result.Error != nil {
+		return result.Error
 	}
-	return userPtr, nil
+	return nil
 }
 
 // edit user in database
 func (ur *userRepo) EditUser(userPtr *entity.User) (*entity.User, error) {
 	result := ur.db.Save(userPtr)
-	if result.Error == nil {
+	if result.Error != nil {
 		return nil, result.Error
 	}
 	return userPtr, nil
