@@ -1,4 +1,4 @@
-package service
+package handlers
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/suryasaputra2016/book-rental/utils"
 )
 
-type UserService interface {
+type UserHandler interface {
 	CreateUser(echo.Context) error
 	Login(echo.Context) error
 	Topup(echo.Context) error
@@ -19,12 +19,12 @@ type UserService interface {
 }
 
 // user repository implementation with database connection
-type userService struct {
+type userHandler struct {
 	ur repo.UserRepo
 }
 
-func NewUserService(ur repo.UserRepo) *userService {
-	return &userService{ur: ur}
+func NewUserHandler(ur repo.UserRepo) *userHandler {
+	return &userHandler{ur: ur}
 }
 
 // @Summary Register
@@ -37,7 +37,7 @@ func NewUserService(ur repo.UserRepo) *userService {
 // @Router /register [post]
 // @Failure 400 {object} entity.ErrorMessage
 // @Failure 500 {object}  entity.ErrorMessage
-func (us *userService) CreateUser(c echo.Context) error {
+func (us *userHandler) CreateUser(c echo.Context) error {
 	// bind request body
 	var req entity.CreateUserRequest
 	if c.Bind(&req) != nil {
@@ -97,7 +97,7 @@ func (us *userService) CreateUser(c echo.Context) error {
 // @Router /login [post]
 // @Failure 400 {object} entity.ErrorMessage
 // @Failure 500 {object}  entity.ErrorMessage
-func (us *userService) Login(c echo.Context) error {
+func (us *userHandler) Login(c echo.Context) error {
 	// bind request body
 	var req entity.LoginRequest
 	if c.Bind(&req) != nil {
@@ -141,7 +141,7 @@ func (us *userService) Login(c echo.Context) error {
 // @Router /topup [put]
 // @Failure 400 {object} entity.ErrorMessage
 // @Failure 500 {object}  entity.ErrorMessage
-func (us *userService) Topup(c echo.Context) error {
+func (us *userHandler) Topup(c echo.Context) error {
 	// get res
 	// bind request body
 	var req entity.TopupRequest

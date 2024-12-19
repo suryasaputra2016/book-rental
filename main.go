@@ -4,9 +4,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/suryasaputra2016/book-rental/config"
+	"github.com/suryasaputra2016/book-rental/handlers"
 	"github.com/suryasaputra2016/book-rental/middlewares"
 	"github.com/suryasaputra2016/book-rental/repo"
-	"github.com/suryasaputra2016/book-rental/service"
 	"github.com/suryasaputra2016/book-rental/utils"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
@@ -30,12 +30,12 @@ func main() {
 	// configure database, user repo, and user service
 	db := config.ConnectDB()
 	userRepo := repo.NewUserRepo(db)
-	userService := service.NewUserService(userRepo)
+	userHandler := handlers.NewUserHandler(userRepo)
 	rentalRepo := repo.NewRentRepo(db)
-	rentService := service.NewRentService(rentalRepo)
+	rentHandler := handlers.NewRentHandler(rentalRepo)
 	bookRepo := repo.NewBookRepo(db)
 
-	bookService := service.NewBookService(bookRepo, userRepo, rentalRepo)
+	bookHandler := handlers.NewBookHandler(bookRepo, userRepo, rentalRepo)
 
 	e := echo.New()
 
@@ -50,13 +50,13 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// routes
-	e.POST("/register", userService.CreateUser)
-	e.POST("/login", userService.Login)
-	e.PUT("/topup", userService.Topup, middlewares.Authorization())
-	e.GET("/rents", rentService.ShowRents, middlewares.Authorization())
-	e.GET("/books", bookService.ShowBooks)
-	e.POST("/books/rent", bookService.RentBook, middlewares.Authorization())
-	e.POST("/books/return", bookService.ReturnBook, middlewares.Authorization())
+	e.POST("/register", userHandler.CreateUser)
+	e.POST("/login", userHandler.Login)
+	e.PUT("/topup", userHandler.Topup, middlewares.Authorization())
+	e.GET("/rents", rentHandler.ShowRents, middlewares.Authorization())
+	e.GET("/books", bookHandler.ShowBooks)
+	e.POST("/books/rent", bookHandler.RentBook, middlewares.Authorization())
+	e.POST("/books/return", bookHandler.ReturnBook, middlewares.Authorization())
 
 	// start server
 	e.Logger.Fatal(e.Start(utils.GetPort()))

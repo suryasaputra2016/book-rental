@@ -220,7 +220,7 @@ info:
     name: Surya Saputra
   description: Hacktiv8 Phase 3 Mini Project
   license:
-    name: MIT License
+    name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
   title: BookRental

@@ -1,4 +1,4 @@
-package service
+package handlers
 
 import (
 	"fmt"
@@ -11,21 +11,21 @@ import (
 	"github.com/suryasaputra2016/book-rental/repo"
 )
 
-type BookService interface {
+type BookHandler interface {
 	RentBook(echo.Context) error
 	ReturnBook(echo.Context) error
 	ShowBooks(echo.Context) error
 }
 
 // user repository implementation with database connection
-type bookService struct {
+type bookHandler struct {
 	br repo.BookRepo
 	ur repo.UserRepo
 	rr repo.RentRepo
 }
 
-func NewBookService(br repo.BookRepo, ur repo.UserRepo, rr repo.RentRepo) *bookService {
-	return &bookService{
+func NewBookHandler(br repo.BookRepo, ur repo.UserRepo, rr repo.RentRepo) *bookHandler {
+	return &bookHandler{
 		br: br,
 		ur: ur,
 		rr: rr,
@@ -43,7 +43,7 @@ func NewBookService(br repo.BookRepo, ur repo.UserRepo, rr repo.RentRepo) *bookS
 // @Router /books/rent [post]
 // @Failure 400 {object} entity.ErrorMessage
 // @Failure 500 {object}  entity.ErrorMessage
-func (bs *bookService) RentBook(c echo.Context) error {
+func (bs *bookHandler) RentBook(c echo.Context) error {
 	// bind request body
 	var req entity.RentBookRequest
 	if c.Bind(&req) != nil {
@@ -133,7 +133,7 @@ func (bs *bookService) RentBook(c echo.Context) error {
 // @Router /books/return [post]
 // @Failure 400 {object} entity.ErrorMessage
 // @Failure 500 {object}  entity.ErrorMessage
-func (bs *bookService) ReturnBook(c echo.Context) error {
+func (bs *bookHandler) ReturnBook(c echo.Context) error {
 	// bind request body
 	var req entity.ReturnBookRequest
 	if c.Bind(&req) != nil {
@@ -207,7 +207,7 @@ func (bs *bookService) ReturnBook(c echo.Context) error {
 // @Success 200 {object} entity.ShowBooksResponse
 // @Router /books [get]
 // @Failure 500 {object}  entity.ErrorMessage
-func (bs *bookService) ShowBooks(c echo.Context) error {
+func (bs *bookHandler) ShowBooks(c echo.Context) error {
 	var bookCopies []entity.BookCopy
 	bookCopies, err := bs.br.FindAllBook()
 	if err != nil {

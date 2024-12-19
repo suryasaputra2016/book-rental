@@ -1,4 +1,4 @@
-package service
+package handlers
 
 import (
 	"net/http"
@@ -10,17 +10,17 @@ import (
 	"github.com/suryasaputra2016/book-rental/repo"
 )
 
-type RentService interface {
+type RentHandler interface {
 	ShowRents(echo.Context) error
 }
 
 // user repository implementation with database connection
-type rentService struct {
+type rentHandler struct {
 	rr repo.RentRepo
 }
 
-func NewRentService(rr repo.RentRepo) *rentService {
-	return &rentService{
+func NewRentHandler(rr repo.RentRepo) *rentHandler {
+	return &rentHandler{
 		rr: rr,
 	}
 }
@@ -33,7 +33,7 @@ func NewRentService(rr repo.RentRepo) *rentService {
 // @Success 200 {object} entity.ShowRentsResponse
 // @Router /rents [get]
 // @Failure 500 {object}  entity.ErrorMessage
-func (rs *rentService) ShowRents(c echo.Context) error {
+func (rs *rentHandler) ShowRents(c echo.Context) error {
 	// get rents and copy
 	userId := middlewares.GetUserID(c.Get("user"))
 	RentsPtr, err := rs.rr.FindRentsByUserID(userId)

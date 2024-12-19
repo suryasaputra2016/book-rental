@@ -56,9 +56,3 @@ type ShowBooksResponse struct {
 	Category   string  `json:"category" validate:"required, category"`
 	RentalCost float32 `json:"rental_cost" validate:"required, rental_cost"`
 }
-
-// invoice
-type Invoice struct {
-	ID         string `json:"id" validate:"required, id"`
-	InvoiceURL string `json:"invoice_url"  validate:"required, invoice_url"`
-}
