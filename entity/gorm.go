@@ -10,8 +10,20 @@ type User struct {
 	Email           string  `gorm:"type:varchar(100);not null;unique"`
 	PasswordHash    string  `gorm:"type:text;not null"`
 	DepositAmount   float32 `gorm:"type:decimal(15,2); default:0.0"`
-	BookCopies      []BookCopy
+	Rents           []Rent
 	RentalHistories []RentalHistory
+}
+
+// rent entity
+type Rent struct {
+	ID         uint `gorm:"primaryKey"`
+	UserID     uint
+	BookCopyID uint
+	Status     string    `gorm:"type:varchar(10);not null"` // ongoing, finished, overdue
+	StartDate  time.Time `gorm:"default:CURRENT_TIMESTAMP"`
+	DueDate    time.Time
+	EndDate    *time.Time
+	BookCopy   BookCopy
 }
 
 // book entity
@@ -41,7 +53,8 @@ type RentalHistory struct {
 	ID         uint `gorm:"primaryKey"`
 	UserID     uint
 	BookCopyID uint
-	Type       string `gorm:"type:varchar(10);not null"` // rent, return
+	Type       string `gorm:"type:varchar(10);not null"` // take, return
 	CreatedAt  time.Time
+	User       User
 	BookCopy   BookCopy
 }

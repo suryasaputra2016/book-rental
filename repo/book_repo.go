@@ -14,11 +14,12 @@ type BookRepo interface {
 	EditBookCopy(bookCopyPtr *entity.BookCopy) (*entity.BookCopy, error)
 }
 
-// user repository implementation with database connection
+// book repository implementation with database connection
 type bookRepo struct {
 	db *gorm.DB
 }
 
+// NewBookRepo returns new book repository implementation
 func NewBookRepo(db *gorm.DB) *bookRepo {
 	return &bookRepo{db: db}
 }

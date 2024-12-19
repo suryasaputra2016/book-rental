@@ -38,6 +38,7 @@ func migrateDatabase(db *gorm.DB) {
 	fmt.Println("Running migration")
 	err := db.AutoMigrate(
 		entity.User{},
+		entity.Rent{},
 		entity.Book{},
 		entity.BookCopy{},
 		entity.RentalHistory{},

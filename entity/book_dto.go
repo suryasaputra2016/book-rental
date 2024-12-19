@@ -11,7 +11,7 @@ type RentBookRequest struct {
 type RentBookResponse struct {
 	Message    string           `json:"message" validate:"required, message"`
 	UserData   UserResponseData `json:"user_data" validate:"required, user_data"`
-	RentedBook RentedBook       `json:"rented_books" validate:"required, rented_books"`
+	RentedBook RentedBook       `json:"rented_book" validate:"required, rented_book"`
 }
 
 // book rental data

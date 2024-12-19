@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/suryasaputra2016/book-rental/entity"
@@ -18,12 +19,14 @@ type BookService interface {
 type bookService struct {
 	br repo.BookRepo
 	ur repo.UserRepo
+	rr repo.RentRepo
 }
 
-func NewBookService(br repo.BookRepo, ur repo.UserRepo) *bookService {
+func NewBookService(br repo.BookRepo, ur repo.UserRepo, rr repo.RentRepo) *bookService {
 	return &bookService{
 		br: br,
 		ur: ur,
+		rr: rr,
 	}
 }
 
@@ -42,9 +45,9 @@ func (bs *bookService) RentBook(c echo.Context) error {
 	}
 
 	// get user
-	userId := middlewares.GetUserID(c.Get("user"))
+	userID := middlewares.GetUserID(c.Get("user"))
 	var userPtr *entity.User
-	if userPtr, err = bs.ur.FindUserByID(userId); err != nil {
+	if userPtr, err = bs.ur.FindUserByID(userID); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "user id cannot be found")
 	}
 
@@ -62,9 +65,27 @@ func (bs *bookService) RentBook(c echo.Context) error {
 
 	// subtract user deposit and add book copy to user
 	userPtr.DepositAmount -= bookPtr.RentalCost
-	userPtr.BookCopies = append(userPtr.BookCopies, *rentedCopyPtr)
+
+	//create new rent and append it to user
+	newRent := entity.Rent{
+		UserID:   uint(userID),
+		Status:   "ongoing",
+		DueDate:  time.Now(),
+		BookCopy: *rentedCopyPtr,
+	}
+	userPtr.Rents = append(userPtr.Rents, newRent)
 	if userPtr, err = bs.ur.EditUser(userPtr); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "cannot update user")
+	}
+
+	// record in rental history
+	newRentalHistory := entity.RentalHistory{
+		UserID:     uint(userID),
+		BookCopyID: *&rentedCopyPtr.BookID,
+		Type:       "take",
+	}
+	if err = bs.rr.AddRentHistory(&newRentalHistory); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "cannot update rental history")
 	}
 
 	// define and send response

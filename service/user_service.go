@@ -65,7 +65,7 @@ func (us *userService) CreateUser(c echo.Context) error {
 	}
 
 	//define and send response
-	res := &entity.CreateUserRepsonse{
+	res := entity.CreateUserRepsonse{
 		Message: "user successfully created",
 		UserData: entity.UserResponseData{
 			FirstName:     newUser.FirstName,
@@ -74,7 +74,7 @@ func (us *userService) CreateUser(c echo.Context) error {
 			DepositAmount: newUser.DepositAmount,
 		},
 	}
-	return c.JSON(http.StatusCreated, *res)
+	return c.JSON(http.StatusCreated, res)
 }
 
 func (us *userService) Login(c echo.Context) error {
@@ -153,35 +153,5 @@ func (us *userService) Topup(c echo.Context) error {
 			DepositAmount: userPtr.DepositAmount,
 		},
 	}
-	return c.JSON(http.StatusOK, res)
-}
-
-func (us *userService) ShowRents(c echo.Context) error {
-	// get user together with book and copy
-	userId := middlewares.GetUserID(c.Get("user"))
-	var userPtr *entity.User
-	var err error
-	if userPtr, err = us.ur.FindUserByID(userId); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "user cannot be found")
-	}
-
-	// define res
-	var rentedBooks []entity.RentedBook
-	for _, copy := range userPtr.BookCopies {
-		rentedBook := entity.RentedBook{
-			ISBN:       copy.Book.ISBN,
-			Title:      copy.Book.Title,
-			Author:     copy.Book.Author,
-			Category:   copy.Book.Category,
-			CopyNumber: copy.CopyNumber,
-		}
-		rentedBooks = append(rentedBooks, rentedBook)
-	}
-
-	res := entity.ShowRentsResponse{
-		Message:     "Books currently being rented",
-		RentedBooks: rentedBooks,
-	}
-
 	return c.JSON(http.StatusOK, res)
 }

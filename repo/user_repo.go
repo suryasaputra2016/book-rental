@@ -25,7 +25,7 @@ func NewUserRepo(db *gorm.DB) *userRepo {
 // find user with id
 func (ur *userRepo) FindUserByID(id int) (*entity.User, error) {
 	var userPtr = new(entity.User)
-	result := ur.db.Preload("BookCopies.Book").First(userPtr, id)
+	result := ur.db.First(userPtr, id)
 	if result.Error != nil {
 		return nil, result.Error
 	}
