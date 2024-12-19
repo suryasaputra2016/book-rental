@@ -21,7 +21,7 @@ import (
 // @contact.name Surya Saputra
 // @contact.email sayasuryasaputra@gmail.com
 
-// @license.name The MIT License
+// @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @host https://*****.herokuapp.com

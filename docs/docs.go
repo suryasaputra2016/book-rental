@@ -15,7 +15,7 @@ const docTemplate = `{
             "email": "sayasuryasaputra@gmail.com"
         },
         "license": {
-            "name": "The MIT License",
+            "name": "MIT License",
             "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
         },
         "version": "{{.Version}}"
