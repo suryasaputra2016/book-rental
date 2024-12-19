@@ -11,6 +11,7 @@ import (
 type BookRepo interface {
 	FindBookByTitleAuthor(title, author string) (*entity.Book, error)
 	FindAvailableBookByTitleAuthor(title, author string) (*entity.Book, error)
+	FindAllBook() ([]entity.BookCopy, error)
 	EditBookCopy(bookCopyPtr *entity.BookCopy) (*entity.BookCopy, error)
 }
 
@@ -54,6 +55,16 @@ func (br bookRepo) FindAvailableBookByTitleAuthor(title, author string) (*entity
 		return nil, errors.New("no book copy is available for rent")
 	}
 	return bookPtr, nil
+}
+
+func (br bookRepo) FindAllBook() ([]entity.BookCopy, error) {
+	var bookCopies []entity.BookCopy
+	result := br.db.Preload("Book").Order("id").Find(&bookCopies)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return bookCopies, nil
 }
 
 // edit bookcopy in database

@@ -34,8 +34,12 @@ func main() {
 	e.POST("/register", userService.CreateUser)
 	e.POST("/login", userService.Login)
 	e.PUT("/topup", userService.Topup, middlewares.Authorization())
+
 	e.GET("/rents", rentService.ShowRents, middlewares.Authorization())
+
+	e.GET("/books", bookService.ShowBooks)
 	e.POST("/rentbook", bookService.RentBook, middlewares.Authorization())
+	e.POST("/returnbook", bookService.ReturnBook, middlewares.Authorization())
 
 	// start server
 	e.Logger.Fatal(e.Start(utils.GetPort()))

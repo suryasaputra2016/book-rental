@@ -1,6 +1,10 @@
 package utils
 
-import "os"
+import (
+	"os"
+
+	_ "github.com/joho/godotenv/autoload"
+)
 
 // func getPort return port
 func GetPort() string {
