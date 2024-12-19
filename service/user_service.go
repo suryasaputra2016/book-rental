@@ -27,6 +27,16 @@ func NewUserService(ur repo.UserRepo) *userService {
 	return &userService{ur: ur}
 }
 
+// @Summary Register
+// @Description Register a new user
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param register-data body entity.CreateUserRequest true "register request"
+// @Success 201 {object} entity.CreateUserRepsonse
+// @Router /register [post]
+// @Failure 400 {object} entity.ErrorMessage
+// @Failure 500 {object}  entity.ErrorMessage
 func (us *userService) CreateUser(c echo.Context) error {
 	// bind request body
 	var req entity.CreateUserRequest
@@ -77,6 +87,16 @@ func (us *userService) CreateUser(c echo.Context) error {
 	return c.JSON(http.StatusCreated, res)
 }
 
+// @Summary Login
+// @Description Login user
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param login-data body entity.LoginRequest true "login request"
+// @Success 200 {object} entity.LoginResponse
+// @Router /login [post]
+// @Failure 400 {object} entity.ErrorMessage
+// @Failure 500 {object}  entity.ErrorMessage
 func (us *userService) Login(c echo.Context) error {
 	// bind request body
 	var req entity.LoginRequest
@@ -110,10 +130,21 @@ func (us *userService) Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Summary Top-up
+// @Description Top-up deposit amount
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param topup-data body entity.TopupRequest true "topup request"
+// @Security JWT
+// @Success 200 {object} entity.TopupResponse
+// @Router /topup [put]
+// @Failure 400 {object} entity.ErrorMessage
+// @Failure 500 {object}  entity.ErrorMessage
 func (us *userService) Topup(c echo.Context) error {
 	// get res
 	// bind request body
-	var req entity.TopUpRequest
+	var req entity.TopupRequest
 	if c.Bind(&req) != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "JSON request is invalid")
 	}
@@ -128,12 +159,17 @@ func (us *userService) Topup(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "id cannot be found")
 	}
 
-	// xendit
-
 	//validate req.Amount
 	if req.TopupAmount <= 0.0 {
 		return echo.NewHTTPError(http.StatusInternalServerError, "top up amount must be positive float")
 	}
+
+	// create invoice
+	// invoiceRes, err := utils.CreateInvoice(*userPtr, req.TopupAmount)
+	// if err != nil {
+	// 	return c.JSON(http.StatusInternalServerError, "Error while creating invoices")
+	// }
+	// return c.JSON(http.StatusOK, invoiceRes)
 
 	// update user deposit amount
 	userPtr.DepositAmount += req.TopupAmount
@@ -144,7 +180,7 @@ func (us *userService) Topup(c echo.Context) error {
 	}
 
 	// define and send response
-	res := entity.TopUpResponse{
+	res := entity.TopupResponse{
 		Message: "deposit amount is successfully updated",
 		UserData: entity.UserResponseData{
 			FirstName:     userPtr.FirstName,

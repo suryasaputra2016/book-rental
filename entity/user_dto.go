@@ -29,11 +29,11 @@ type LoginResponse struct {
 	Token   string `json:"token" validate:"required, token"`
 }
 
-type TopUpRequest struct {
+type TopupRequest struct {
 	TopupAmount float32 `json:"topup_amount" validate:"required, topup_amount"`
 }
 
-type TopUpResponse CreateUserRepsonse
+type TopupResponse CreateUserRepsonse
 
 type ShowRentsResponse struct {
 	Message     string       `json:"message" validate:"required, message"`

@@ -1,0 +1,423 @@
+basePath: /
+definitions:
+  entity.CreateUserRepsonse:
+    properties:
+      message:
+        type: string
+      user_data:
+        $ref: '#/definitions/entity.UserResponseData'
+    required:
+    - message
+    - user_data
+    type: object
+  entity.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    type: object
+  entity.ErrorMessage:
+    properties:
+      error:
+        type: string
+    required:
+    - error
+    type: object
+  entity.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  entity.LoginResponse:
+    properties:
+      message:
+        type: string
+      token:
+        type: string
+    required:
+    - message
+    - token
+    type: object
+  entity.RentBookRequest:
+    properties:
+      author:
+        type: string
+      isbn:
+        type: string
+      title:
+        type: string
+    required:
+    - author
+    - isbn
+    - title
+    type: object
+  entity.RentBookResponse:
+    properties:
+      message:
+        type: string
+      rented_book:
+        $ref: '#/definitions/entity.RentedBook'
+      user_data:
+        $ref: '#/definitions/entity.UserResponseData'
+    required:
+    - message
+    - rented_book
+    - user_data
+    type: object
+  entity.RentedBook:
+    properties:
+      author:
+        type: string
+      checkout_date:
+        type: string
+      copy_number:
+        type: integer
+      due_date:
+        type: string
+      rent_status:
+        type: string
+      title:
+        type: string
+    required:
+    - author
+    - checkout_date
+    - copy_number
+    - due_date
+    - rent_status
+    - title
+    type: object
+  entity.ReturnBookRequest:
+    properties:
+      author:
+        type: string
+      copy_number:
+        type: integer
+      isbn:
+        type: string
+      title:
+        type: string
+    required:
+    - author
+    - copy_number
+    - isbn
+    - title
+    type: object
+  entity.ReturnBookResponse:
+    properties:
+      message:
+        type: string
+      returned_book:
+        $ref: '#/definitions/entity.ReturnedBook'
+    required:
+    - message
+    - returned_book
+    type: object
+  entity.ReturnedBook:
+    properties:
+      author:
+        type: string
+      copy_number:
+        type: integer
+      rent_status:
+        type: string
+      title:
+        type: string
+    required:
+    - author
+    - copy_number
+    - rent_status
+    - title
+    type: object
+  entity.ShowBooksResponse:
+    properties:
+      author:
+        type: string
+      category:
+        type: string
+      copy_number:
+        type: integer
+      isbn:
+        type: string
+      rental_cost:
+        type: number
+      status:
+        type: string
+      title:
+        type: string
+    required:
+    - author
+    - category
+    - copy_number
+    - isbn
+    - rental_cost
+    - status
+    - title
+    type: object
+  entity.ShowRentsResponse:
+    properties:
+      message:
+        type: string
+      rented_books:
+        items:
+          $ref: '#/definitions/entity.RentedBook'
+        type: array
+    required:
+    - message
+    - rented_books
+    type: object
+  entity.TopupRequest:
+    properties:
+      topup_amount:
+        type: number
+    required:
+    - topup_amount
+    type: object
+  entity.TopupResponse:
+    properties:
+      message:
+        type: string
+      user_data:
+        $ref: '#/definitions/entity.UserResponseData'
+    required:
+    - message
+    - user_data
+    type: object
+  entity.UserResponseData:
+    properties:
+      deposit_amount:
+        type: number
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+    required:
+    - deposit_amount
+    - email
+    - first_name
+    - last_name
+    type: object
+host: https://*****.herokuapp.com
+info:
+  contact:
+    email: sayasuryasaputra@gmail.com
+    name: Surya Saputra
+  description: Hacktiv8 Phase 3 Mini Project
+  license:
+    name: The MIT License
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: BookRental
+  version: "1.0"
+paths:
+  /books:
+    get:
+      description: Show All Book in the library
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.ShowBooksResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.ErrorMessage'
+      security:
+      - JWT: []
+      summary: Show All Book
+      tags:
+      - books
+  /books/rent:
+    post:
+      consumes:
+      - application/json
+      description: Rent One Book
+      parameters:
+      - description: rentbook request
+        in: body
+        name: rent-book-data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.RentBookRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.RentBookResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entity.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.ErrorMessage'
+      security:
+      - JWT: []
+      summary: Rent A Book
+      tags:
+      - books
+  /books/return:
+    post:
+      consumes:
+      - application/json
+      description: Return One Book
+      parameters:
+      - description: returnbook request
+        in: body
+        name: return-book-data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.ReturnBookRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.ReturnBookResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entity.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.ErrorMessage'
+      security:
+      - JWT: []
+      summary: Return A Book
+      tags:
+      - books
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login user
+      parameters:
+      - description: login request
+        in: body
+        name: login-data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entity.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.ErrorMessage'
+      summary: Login
+      tags:
+      - user
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      parameters:
+      - description: register request
+        in: body
+        name: register-data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entity.CreateUserRepsonse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entity.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.ErrorMessage'
+      summary: Register
+      tags:
+      - user
+  /rents:
+    get:
+      description: Show all rents, finished and ongoing
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.ShowRentsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.ErrorMessage'
+      security:
+      - JWT: []
+      summary: Show Rents
+      tags:
+      - rents
+  /topup:
+    put:
+      consumes:
+      - application/json
+      description: Top-up deposit amount
+      parameters:
+      - description: topup request
+        in: body
+        name: topup-data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.TopupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.TopupResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entity.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.ErrorMessage'
+      security:
+      - JWT: []
+      summary: Top-up
+      tags:
+      - user
+swagger: "2.0"

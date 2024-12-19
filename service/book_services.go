@@ -9,7 +9,6 @@ import (
 	"github.com/suryasaputra2016/book-rental/entity"
 	"github.com/suryasaputra2016/book-rental/middlewares"
 	"github.com/suryasaputra2016/book-rental/repo"
-	"github.com/suryasaputra2016/book-rental/utils"
 )
 
 type BookService interface {
@@ -33,6 +32,17 @@ func NewBookService(br repo.BookRepo, ur repo.UserRepo, rr repo.RentRepo) *bookS
 	}
 }
 
+// @Summary Rent A Book
+// @Description Rent One Book
+// @Tags books
+// @Accept json
+// @Produce json
+// @Param rent-book-data body entity.RentBookRequest true "rentbook request"
+// @Security JWT
+// @Success 200 {object} entity.RentBookResponse
+// @Router /books/rent [post]
+// @Failure 400 {object} entity.ErrorMessage
+// @Failure 500 {object}  entity.ErrorMessage
 func (bs *bookService) RentBook(c echo.Context) error {
 	// bind request body
 	var req entity.RentBookRequest
@@ -57,12 +67,6 @@ func (bs *bookService) RentBook(c echo.Context) error {
 	// check deposit amount
 	if userPtr.DepositAmount < bookPtr.RentalCost {
 		return echo.NewHTTPError(http.StatusBadRequest, "insufficient deposit, please top up")
-	}
-
-	// create invoice
-	_, err = utils.CreateInvoice(*bookPtr, *userPtr)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, "Error while creating invoices")
 	}
 
 	// flag the copy as rented
@@ -118,60 +122,17 @@ func (bs *bookService) RentBook(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// func (bs *bookService) CompleteRentBook(c echo.Context) error {
-// 	// flag the copy as rented
-// 	rentedCopyPtr := &bookPtr.BookCopies[0]
-// 	rentedCopyPtr.Status = "rented"
-// 	if rentedCopyPtr, err = bs.br.EditBookCopy(rentedCopyPtr); err != nil {
-// 		return echo.NewHTTPError(http.StatusInternalServerError, "cannot update book copy")
-// 	}
-
-// 	// subtract user deposit and add book copy to user
-// 	userPtr.DepositAmount -= bookPtr.RentalCost
-
-// 	//create new rent and append it to user
-// 	newRent := entity.Rent{
-// 		UserID:   uint(userID),
-// 		Status:   "ongoing",
-// 		DueDate:  time.Now().AddDate(0, 0, 14),
-// 		BookCopy: *rentedCopyPtr,
-// 	}
-// 	userPtr.Rents = append(userPtr.Rents, newRent)
-// 	if userPtr, err = bs.ur.EditUser(userPtr); err != nil {
-// 		return echo.NewHTTPError(http.StatusInternalServerError, "cannot update user")
-// 	}
-
-// 	// record in rental history
-// 	newRentalHistory := entity.RentalHistory{
-// 		UserID:     uint(userID),
-// 		BookCopyID: *&rentedCopyPtr.BookID,
-// 		Type:       "take",
-// 	}
-// 	if err = bs.rr.AddRentHistory(&newRentalHistory); err != nil {
-// 		return echo.NewHTTPError(http.StatusInternalServerError, "cannot update rental history")
-// 	}
-
-// 	// define and send response
-// 	res := entity.RentBookResponse{
-// 		Message: "book is successfully rented",
-// 		UserData: entity.UserResponseData{
-// 			FirstName:     userPtr.FirstName,
-// 			LastName:      userPtr.LastName,
-// 			Email:         userPtr.Email,
-// 			DepositAmount: userPtr.DepositAmount,
-// 		},
-// 		RentedBook: entity.RentedBook{
-// 			Title:        bookPtr.Title,
-// 			Author:       bookPtr.Author,
-// 			CopyNumber:   rentedCopyPtr.CopyNumber,
-// 			CheckoutDate: time.Now().Format("2006-01-02"),
-// 			DueDate:      newRent.DueDate.Format("2006-01-02"),
-// 			RentStatus:   newRent.Status,
-// 		},
-// 	}
-// 	return c.JSON(http.StatusOK, res)
-// }
-
+// @Summary Return A Book
+// @Description Return One Book
+// @Tags books
+// @Accept json
+// @Produce json
+// @Param return-book-data body entity.ReturnBookRequest true "returnbook request"
+// @Security JWT
+// @Success 200 {object} entity.ReturnBookResponse
+// @Router /books/return [post]
+// @Failure 400 {object} entity.ErrorMessage
+// @Failure 500 {object}  entity.ErrorMessage
 func (bs *bookService) ReturnBook(c echo.Context) error {
 	// bind request body
 	var req entity.ReturnBookRequest
@@ -238,6 +199,14 @@ func (bs *bookService) ReturnBook(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Summary Show All Book
+// @Description Show All Book in the library
+// @Tags books
+// @Produce json
+// @Security JWT
+// @Success 200 {object} entity.ShowBooksResponse
+// @Router /books [get]
+// @Failure 500 {object}  entity.ErrorMessage
 func (bs *bookService) ShowBooks(c echo.Context) error {
 	var bookCopies []entity.BookCopy
 	bookCopies, err := bs.br.FindAllBook()

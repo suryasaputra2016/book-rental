@@ -25,6 +25,14 @@ func NewRentService(rr repo.RentRepo) *rentService {
 	}
 }
 
+// @Summary Show Rents
+// @Description Show all rents, finished and ongoing
+// @Tags rents
+// @Produce json
+// @Security JWT
+// @Success 200 {object} entity.ShowRentsResponse
+// @Router /rents [get]
+// @Failure 500 {object}  entity.ErrorMessage
 func (rs *rentService) ShowRents(c echo.Context) error {
 	// get rents and copy
 	userId := middlewares.GetUserID(c.Get("user"))
