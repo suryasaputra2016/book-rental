@@ -34,8 +34,3 @@ type TopupRequest struct {
 }
 
 type TopupResponse RegisterRepsonse
-
-type ShowRentsResponse struct {
-	Message     string       `json:"message" validate:"required, message"`
-	RentedBooks []RentedBook `json:"rented_books" validate:"required, rented_books"`
-}

@@ -36,9 +36,10 @@ func main() {
 	userHandler := handlers.NewUserHandler(userService)
 
 	rentalRepo := repo.NewRentRepo(db)
-	rentHandler := handlers.NewRentHandler(rentalRepo)
-	bookRepo := repo.NewBookRepo(db)
+	rentalService := services.NewRentService(rentalRepo)
+	rentHandler := handlers.NewRentHandler(rentalService)
 
+	bookRepo := repo.NewBookRepo(db)
 	bookHandler := handlers.NewBookHandler(bookRepo, userRepo, rentalRepo)
 
 	e := echo.New()

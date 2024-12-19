@@ -18,11 +18,12 @@ type UserService interface {
 	CheckTopupData(userID int, topupAmount float32) (*entity.User, error)
 }
 
-// user repository implementation with database connection
+// user service implementation with use repo
 type userService struct {
 	ur repo.UserRepo
 }
 
+// NewUserService takes user repo and gives new user service
 func NewUserService(ur repo.UserRepo) *userService {
 	return &userService{ur: ur}
 }
@@ -55,7 +56,7 @@ func (us *userService) CreateNewUser(registrationData *entity.RegisterRequest) (
 		return nil, fmt.Errorf("creating new user: %w", err)
 	}
 
-	//define new user
+	// define new user
 	newUser := entity.User{
 		FirstName:     registrationData.FirstName,
 		LastName:      registrationData.LastName,
@@ -64,7 +65,7 @@ func (us *userService) CreateNewUser(registrationData *entity.RegisterRequest) (
 		DepositAmount: 0.0,
 	}
 
-	// add new user to database and return
+	// add new user to database
 	if err := us.ur.AddUser(&newUser); err != nil {
 		return nil, fmt.Errorf("creating new user: %w", err)
 	}
@@ -73,10 +74,9 @@ func (us *userService) CreateNewUser(registrationData *entity.RegisterRequest) (
 }
 
 func (us *userService) CheckLoginData(email, password string) (*entity.User, error) {
-	// check email and get user info
-	var userPtr *entity.User
-	var err error
-	if userPtr, err = us.ur.FindUserByEmail(email); err != nil {
+	// check email and get user
+	userPtr, err := us.ur.FindUserByEmail(email)
+	if err != nil {
 		return nil, fmt.Errorf("validating login data: %w", err)
 	}
 
@@ -103,6 +103,7 @@ func (us *userService) UpdateDeposit(userPtr *entity.User, amount float32) error
 
 // CheckTopupData verifies user id and top-up amount and if verified returns user entity
 func (us *userService) CheckTopupData(userID int, topupAmount float32) (*entity.User, error) {
+	// check user id and get user
 	userPtr, err := us.ur.FindUserByID(userID)
 	if err != nil {
 		return nil, fmt.Errorf("validating top-up data: %w", err)

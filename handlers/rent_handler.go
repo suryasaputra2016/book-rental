@@ -1,13 +1,13 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/suryasaputra2016/book-rental/entity"
 	"github.com/suryasaputra2016/book-rental/middlewares"
-	"github.com/suryasaputra2016/book-rental/repo"
+	"github.com/suryasaputra2016/book-rental/services"
 )
 
 type RentHandler interface {
@@ -16,13 +16,11 @@ type RentHandler interface {
 
 // user repository implementation with database connection
 type rentHandler struct {
-	rr repo.RentRepo
+	rs services.RentService
 }
 
-func NewRentHandler(rr repo.RentRepo) *rentHandler {
-	return &rentHandler{
-		rr: rr,
-	}
+func NewRentHandler(rs services.RentService) *rentHandler {
+	return &rentHandler{rs: rs}
 }
 
 // @Summary Show Rents
@@ -33,30 +31,17 @@ func NewRentHandler(rr repo.RentRepo) *rentHandler {
 // @Success 200 {object} entity.ShowRentsResponse
 // @Router /rents [get]
 // @Failure 500 {object}  entity.ErrorMessage
-func (rs *rentHandler) ShowRents(c echo.Context) error {
-	// get rents and copy
-	userId := middlewares.GetUserID(c.Get("user"))
-	RentsPtr, err := rs.rr.FindRentsByUserID(userId)
+func (rh *rentHandler) ShowRents(c echo.Context) error {
+	// get rents
+	userID := middlewares.GetUserID(c.Get("user"))
+	rentsPtr, err := rh.rs.GetRents(userID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "rents cannot be found")
-	}
-
-	// check rent status and update
-	var i int
-	for i = 0; i < len(*RentsPtr); i++ {
-		if (*RentsPtr)[i].DueDate.Before(time.Now()) {
-			(*RentsPtr)[i].Status = "overdue"
-		}
-	}
-	if i > 0 {
-		if RentsPtr, err = rs.rr.EditRents(RentsPtr); err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "cannot update rents")
-		}
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprint(err))
 	}
 
 	// define and send response
 	var rentedBooks []entity.RentedBook
-	for _, rent := range *RentsPtr {
+	for _, rent := range *rentsPtr {
 		rentedBook := entity.RentedBook{
 			Title:        rent.BookCopy.Book.Title,
 			Author:       rent.BookCopy.Book.Author,
