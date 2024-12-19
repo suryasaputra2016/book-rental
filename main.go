@@ -7,6 +7,7 @@ import (
 	"github.com/suryasaputra2016/book-rental/handlers"
 	"github.com/suryasaputra2016/book-rental/middlewares"
 	"github.com/suryasaputra2016/book-rental/repo"
+	"github.com/suryasaputra2016/book-rental/services"
 	"github.com/suryasaputra2016/book-rental/utils"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
@@ -29,8 +30,11 @@ import (
 func main() {
 	// configure database, user repo, and user service
 	db := config.ConnectDB()
+
 	userRepo := repo.NewUserRepo(db)
-	userHandler := handlers.NewUserHandler(userRepo)
+	userService := services.NewUserService(userRepo)
+	userHandler := handlers.NewUserHandler(userService)
+
 	rentalRepo := repo.NewRentRepo(db)
 	rentHandler := handlers.NewRentHandler(rentalRepo)
 	bookRepo := repo.NewBookRepo(db)
@@ -50,7 +54,7 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// routes
-	e.POST("/register", userHandler.CreateUser)
+	e.POST("/register", userHandler.Register)
 	e.POST("/login", userHandler.Login)
 	e.PUT("/topup", userHandler.Topup, middlewares.Authorization())
 	e.GET("/rents", rentHandler.ShowRents, middlewares.Authorization())

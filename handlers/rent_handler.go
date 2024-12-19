@@ -54,7 +54,7 @@ func (rs *rentHandler) ShowRents(c echo.Context) error {
 		}
 	}
 
-	// define res
+	// define and send response
 	var rentedBooks []entity.RentedBook
 	for _, rent := range *RentsPtr {
 		rentedBook := entity.RentedBook{

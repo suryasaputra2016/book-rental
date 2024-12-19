@@ -7,12 +7,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/suryasaputra2016/book-rental/entity"
 	"github.com/suryasaputra2016/book-rental/middlewares"
-	"github.com/suryasaputra2016/book-rental/repo"
-	"github.com/suryasaputra2016/book-rental/utils"
+	"github.com/suryasaputra2016/book-rental/services"
 )
 
 type UserHandler interface {
-	CreateUser(echo.Context) error
+	Register(echo.Context) error
 	Login(echo.Context) error
 	Topup(echo.Context) error
 	ShowRents(echo.Context) error
@@ -20,11 +19,11 @@ type UserHandler interface {
 
 // user repository implementation with database connection
 type userHandler struct {
-	ur repo.UserRepo
+	us services.UserService
 }
 
-func NewUserHandler(ur repo.UserRepo) *userHandler {
-	return &userHandler{ur: ur}
+func NewUserHandler(us services.UserService) *userHandler {
+	return &userHandler{us: us}
 }
 
 // @Summary Register
@@ -37,51 +36,32 @@ func NewUserHandler(ur repo.UserRepo) *userHandler {
 // @Router /register [post]
 // @Failure 400 {object} entity.ErrorMessage
 // @Failure 500 {object}  entity.ErrorMessage
-func (us *userHandler) CreateUser(c echo.Context) error {
+func (uh *userHandler) Register(c echo.Context) error {
 	// bind request body
-	var req entity.CreateUserRequest
+	var req entity.RegisterRequest
 	if c.Bind(&req) != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "JSON request is invalid")
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON request")
 	}
 
-	// email and password  validation
-	if err := utils.IsEmailandPasswordFine(req.Email, req.Password); err != nil {
+	// check registration data
+	if err := uh.us.CheckRegistrationData(req.Email, req.Password); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprint(err))
 	}
 
-	// check email if it already exists
-	if _, err := us.ur.FindUserByEmail(req.Email); err == nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "email is already in use")
-	}
-
-	// hash password
-	passwordHash, err := utils.GenerateHash(req.Password)
+	// create new user
+	newUserPtr, err := uh.us.CreateNewUser(&req)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "couldn't hash password")
-	}
-
-	//define new user
-	newUser := entity.User{
-		FirstName:     req.FirstName,
-		LastName:      req.LastName,
-		Email:         req.Email,
-		PasswordHash:  passwordHash,
-		DepositAmount: 0.0,
-	}
-
-	// add new user to database and return
-	if us.ur.AddUser(&newUser) != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprint(err))
 	}
 
 	//define and send response
-	res := entity.CreateUserRepsonse{
-		Message: "user successfully created",
+	res := entity.RegisterRepsonse{
+		Message: "registration success",
 		UserData: entity.UserResponseData{
-			FirstName:     newUser.FirstName,
-			LastName:      newUser.LastName,
-			Email:         newUser.Email,
-			DepositAmount: newUser.DepositAmount,
+			FirstName:     newUserPtr.FirstName,
+			LastName:      newUserPtr.LastName,
+			Email:         newUserPtr.Email,
+			DepositAmount: newUserPtr.DepositAmount,
 		},
 	}
 	return c.JSON(http.StatusCreated, res)
@@ -97,23 +77,17 @@ func (us *userHandler) CreateUser(c echo.Context) error {
 // @Router /login [post]
 // @Failure 400 {object} entity.ErrorMessage
 // @Failure 500 {object}  entity.ErrorMessage
-func (us *userHandler) Login(c echo.Context) error {
+func (uh *userHandler) Login(c echo.Context) error {
 	// bind request body
 	var req entity.LoginRequest
 	if c.Bind(&req) != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "JSON request is invalid")
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON request")
 	}
 
-	// check email and get user info
-	var userPtr *entity.User
-	var err error
-	if userPtr, err = us.ur.FindUserByEmail(req.Email); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "email cannot be found")
-	}
-
-	// check password
-	if utils.CheckPassword(req.Password, userPtr.PasswordHash) != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "password doesn't match")
+	// check login data
+	userPtr, err := uh.us.CheckLoginData(req.Email, req.Password)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprint(err))
 	}
 
 	// generate token
@@ -124,7 +98,7 @@ func (us *userHandler) Login(c echo.Context) error {
 
 	// define and send response
 	res := entity.LoginResponse{
-		Message: "login successful",
+		Message: "login success",
 		Token:   t,
 	}
 	return c.JSON(http.StatusOK, res)
@@ -141,27 +115,18 @@ func (us *userHandler) Login(c echo.Context) error {
 // @Router /topup [put]
 // @Failure 400 {object} entity.ErrorMessage
 // @Failure 500 {object}  entity.ErrorMessage
-func (us *userHandler) Topup(c echo.Context) error {
-	// get res
+func (uh *userHandler) Topup(c echo.Context) error {
 	// bind request body
 	var req entity.TopupRequest
 	if c.Bind(&req) != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "JSON request is invalid")
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON request")
 	}
 
-	// get user id
-	userId := middlewares.GetUserID(c.Get("user"))
-
-	// find user with id
-	var userPtr *entity.User
-	var err error
-	if userPtr, err = us.ur.FindUserByID(userId); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "id cannot be found")
-	}
-
-	//validate req.Amount
-	if req.TopupAmount <= 0.0 {
-		return echo.NewHTTPError(http.StatusInternalServerError, "top up amount must be positive float")
+	// check top up data
+	userID := middlewares.GetUserID(c.Get("user"))
+	userPtr, err := uh.us.CheckTopupData(userID, req.TopupAmount)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprint(err))
 	}
 
 	// create invoice
@@ -171,17 +136,14 @@ func (us *userHandler) Topup(c echo.Context) error {
 	// }
 	// return c.JSON(http.StatusOK, invoiceRes)
 
-	// update user deposit amount
-	userPtr.DepositAmount += req.TopupAmount
-
-	// save to database
-	if userPtr, err = us.ur.EditUser(userPtr); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "cannot update user")
+	// update deposit
+	if err := uh.us.UpdateDeposit(userPtr, req.TopupAmount); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprint(err))
 	}
 
 	// define and send response
 	res := entity.TopupResponse{
-		Message: "deposit amount is successfully updated",
+		Message: "top up success",
 		UserData: entity.UserResponseData{
 			FirstName:     userPtr.FirstName,
 			LastName:      userPtr.LastName,

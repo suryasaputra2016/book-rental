@@ -8,22 +8,25 @@ import (
 
 // test email and password
 func IsEmailandPasswordFine(email, password string) error {
-	if !isEmailStringValid(email) {
-		return errors.New("email is not well formatted")
+	if err := IsEmailStringValid(email); err != nil {
+		return err
 	}
-	err := isPasswordGood(password)
+	err := IsPasswordGood(password)
 	return err
 
 }
 
 // IsEmailStringValid returns boolean of whether the string is in email format
-func isEmailStringValid(email string) bool {
+func IsEmailStringValid(email string) error {
 	emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
-	return emailRegex.MatchString(email)
+	if !emailRegex.MatchString(email) {
+		return errors.New("email is not well formatted")
+	}
+	return nil
 }
 
 // IsPasswordGood returns booleans of good password conditions
-func isPasswordGood(password string) error {
+func IsPasswordGood(password string) error {
 	var containNumber, containUpperCase, containPunctuation, eightOrMore bool
 	index := 0
 	for _, c := range password {
