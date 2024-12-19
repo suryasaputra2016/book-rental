@@ -73,6 +73,7 @@ func (us *userService) CreateNewUser(registrationData *entity.RegisterRequest) (
 	return &newUser, nil
 }
 
+// CheckLoginData verifies email, and password to database and if verified returns user
 func (us *userService) CheckLoginData(email, password string) (*entity.User, error) {
 	// check email and get user
 	userPtr, err := us.ur.FindUserByEmail(email)
@@ -88,20 +89,20 @@ func (us *userService) CheckLoginData(email, password string) (*entity.User, err
 	return userPtr, nil
 }
 
-// UpdateDeposit update user's deposit amount and save it on databse
+// UpdateDeposit update user's deposit amount and save it on database
 func (us *userService) UpdateDeposit(userPtr *entity.User, amount float32) error {
 	// update user deposit amount
 	userPtr.DepositAmount += amount
 
 	// save to database
-	if _, err := us.ur.EditUser(userPtr); err != nil {
+	if err := us.ur.EditUser(userPtr); err != nil {
 		return fmt.Errorf("updating deposit amount: %w", err)
 	}
 
 	return nil
 }
 
-// CheckTopupData verifies user id and top-up amount and if verified returns user entity
+// CheckTopupData verifies user id and top-up amount and if verified returns user
 func (us *userService) CheckTopupData(userID int, topupAmount float32) (*entity.User, error) {
 	// check user id and get user
 	userPtr, err := us.ur.FindUserByID(userID)

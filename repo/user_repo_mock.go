@@ -32,6 +32,6 @@ func (ur *UserRepoMock) AddUser(userPtr *entity.User) error {
 	return nil
 }
 
-func (ur *UserRepoMock) EditUser(userPtr *entity.User) (*entity.User, error) {
-	return nil, nil
+func (ur *UserRepoMock) EditUser(userPtr *entity.User) error {
+	return nil
 }

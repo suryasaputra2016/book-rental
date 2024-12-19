@@ -10,6 +10,7 @@ import (
 	"github.com/suryasaputra2016/book-rental/services"
 )
 
+// user handler interface
 type UserHandler interface {
 	Register(echo.Context) error
 	Login(echo.Context) error
@@ -17,11 +18,12 @@ type UserHandler interface {
 	ShowRents(echo.Context) error
 }
 
-// user repository implementation with database connection
+// user handler implementation with user service
 type userHandler struct {
 	us services.UserService
 }
 
+// NewUserHandler takes user service and returns new user handler
 func NewUserHandler(us services.UserService) *userHandler {
 	return &userHandler{us: us}
 }

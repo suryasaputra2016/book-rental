@@ -48,7 +48,7 @@ type BookCopy struct {
 	Book            Book
 }
 
-// rental history
+// rental history entity
 type RentalHistory struct {
 	ID         uint `gorm:"primaryKey"`
 	UserID     uint

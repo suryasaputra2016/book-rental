@@ -8,28 +8,24 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/suryasaputra2016/book-rental/entity"
 	"github.com/suryasaputra2016/book-rental/middlewares"
-	"github.com/suryasaputra2016/book-rental/repo"
+	"github.com/suryasaputra2016/book-rental/services"
 )
 
+// book handler interface
 type BookHandler interface {
-	RentBook(echo.Context) error
-	ReturnBook(echo.Context) error
+	RentABook(echo.Context) error
+	ReturnABook(echo.Context) error
 	ShowBooks(echo.Context) error
 }
 
-// user repository implementation with database connection
+// boook handler implementation with book service
 type bookHandler struct {
-	br repo.BookRepo
-	ur repo.UserRepo
-	rr repo.RentRepo
+	bs services.BookService
 }
 
-func NewBookHandler(br repo.BookRepo, ur repo.UserRepo, rr repo.RentRepo) *bookHandler {
-	return &bookHandler{
-		br: br,
-		ur: ur,
-		rr: rr,
-	}
+// NewBookHandler takes book service and returns new book handler
+func NewBookHandler(bs services.BookService) *bookHandler {
+	return &bookHandler{bs: bs}
 }
 
 // @Summary Rent A Book
@@ -43,67 +39,34 @@ func NewBookHandler(br repo.BookRepo, ur repo.UserRepo, rr repo.RentRepo) *bookH
 // @Router /books/rent [post]
 // @Failure 400 {object} entity.ErrorMessage
 // @Failure 500 {object}  entity.ErrorMessage
-func (bs *bookHandler) RentBook(c echo.Context) error {
+func (bh *bookHandler) RentABook(c echo.Context) error {
 	// bind request body
 	var req entity.RentBookRequest
 	if c.Bind(&req) != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "JSON request is invalid")
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON request")
 	}
 
-	// find available book
-	var bookPtr *entity.Book
-	var err error
-	if bookPtr, err = bs.br.FindAvailableBookByTitleAuthor(req.Title, req.Author); err != nil {
+	// check book rental requirements
+	userID := middlewares.GetUserID(c.Get("user"))
+	bookPtr, userPtr, err := bh.bs.CheckBookRentalRequirements(req.Title, req.Author, userID)
+	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprint(err))
 	}
 
-	// get user
-	userID := middlewares.GetUserID(c.Get("user"))
-	var userPtr *entity.User
-	if userPtr, err = bs.ur.FindUserByID(userID); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "user id cannot be found")
+	// process book rental
+	newRent, err := bh.bs.ProcessBookRental(bookPtr, userPtr)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprint(err))
 	}
 
-	// check deposit amount
-	if userPtr.DepositAmount < bookPtr.RentalCost {
-		return echo.NewHTTPError(http.StatusBadRequest, "insufficient deposit, please top up")
-	}
-
-	// flag the copy as rented
-	rentedCopyPtr := &bookPtr.BookCopies[0]
-	rentedCopyPtr.Status = "rented"
-	if rentedCopyPtr, err = bs.br.EditBookCopy(rentedCopyPtr); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "cannot update book copy")
-	}
-
-	// subtract user deposit and add book copy to user
-	userPtr.DepositAmount -= bookPtr.RentalCost
-
-	//create new rent and append it to user
-	newRent := entity.Rent{
-		UserID:   uint(userID),
-		Status:   "ongoing",
-		DueDate:  time.Now().AddDate(0, 0, 14),
-		BookCopy: *rentedCopyPtr,
-	}
-	userPtr.Rents = append(userPtr.Rents, newRent)
-	if userPtr, err = bs.ur.EditUser(userPtr); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "cannot update user")
-	}
-
-	// record in rental history
-	newRentalHistory := entity.RentalHistory{
-		UserID:     uint(userID),
-		BookCopyID: *&rentedCopyPtr.BookID,
-		Type:       "take",
-	}
-	if err = bs.rr.AddRentHistory(&newRentalHistory); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "cannot update rental history")
+	// record in rent history
+	if err = bh.bs.StoreRentHistory(uint(userID), bookPtr.BookCopies[0].ID); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprint(err))
 	}
 
 	// define and send response
 	res := entity.RentBookResponse{
-		Message: "book is successfully rented",
+		Message: "rental success",
 		UserData: entity.UserResponseData{
 			FirstName:     userPtr.FirstName,
 			LastName:      userPtr.LastName,
@@ -113,7 +76,7 @@ func (bs *bookHandler) RentBook(c echo.Context) error {
 		RentedBook: entity.RentedBook{
 			Title:        bookPtr.Title,
 			Author:       bookPtr.Author,
-			CopyNumber:   rentedCopyPtr.CopyNumber,
+			CopyNumber:   bookPtr.BookCopies[0].CopyNumber,
 			CheckoutDate: time.Now().Format("2006-01-02"),
 			DueDate:      newRent.DueDate.Format("2006-01-02"),
 			RentStatus:   newRent.Status,
@@ -133,90 +96,63 @@ func (bs *bookHandler) RentBook(c echo.Context) error {
 // @Router /books/return [post]
 // @Failure 400 {object} entity.ErrorMessage
 // @Failure 500 {object}  entity.ErrorMessage
-func (bs *bookHandler) ReturnBook(c echo.Context) error {
+func (bh *bookHandler) ReturnABook(c echo.Context) error {
 	// bind request body
 	var req entity.ReturnBookRequest
 	if c.Bind(&req) != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "JSON request is invalid")
 	}
 
-	// find available book
+	// check book return requirements
 	userID := middlewares.GetUserID(c.Get("user"))
-	rentsPtr, err := bs.rr.FindRentsByUserID(userID)
+	rentPtr, err := bh.bs.CheckBookReturnRequirements(req.Title, req.Author, req.CopyNumber, userID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "rents cannot be found")
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprint(err))
 	}
 
-	// check if the copy is rented
-	var i int
-	found := false
-	for i = 0; i < len(*rentsPtr); i++ {
-		if (*rentsPtr)[i].BookCopy.Book.Title == req.Title &&
-			(*rentsPtr)[i].BookCopy.Book.Author == req.Author &&
-			(*rentsPtr)[i].BookCopy.CopyNumber == req.CopyNumber &&
-			((*rentsPtr)[i].BookCopy.Status == "ongoing" || (*rentsPtr)[i].BookCopy.Status == "overdue") {
-			found = true
-			break
-		}
-	}
-	if !found {
-		return echo.NewHTTPError(http.StatusBadRequest, "book is currently not rented by user")
+	// process book return
+	copyPtr, err := bh.bs.ProcessBookReturn(rentPtr)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprint(err))
 	}
 
-	// change rent status
-	(*rentsPtr)[i].Status = "finished"
-	if _, err = bs.rr.EditRent(&(*rentsPtr)[i]); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "cannot update rent")
-	}
-
-	// flag the copy as available
-	rentedCopyPtr := &(*rentsPtr)[i].BookCopy
-	rentedCopyPtr.Status = "available"
-	if rentedCopyPtr, err = bs.br.EditBookCopy(rentedCopyPtr); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "cannot update book copy")
-	}
-
-	// record in rental history
-	newRentalHistory := entity.RentalHistory{
-		UserID:     uint(userID),
-		BookCopyID: *&rentedCopyPtr.BookID,
-		Type:       "return",
-	}
-	if err = bs.rr.AddRentHistory(&newRentalHistory); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "cannot update rental history")
+	// record in rent history
+	if err = bh.bs.StoreRentHistory(uint(userID), copyPtr.ID); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprint(err))
 	}
 
 	// define and send response
 	res := entity.ReturnBookResponse{
-		Message: "book is successfully returned",
+		Message: "return success",
 		ReturnedBook: entity.ReturnedBook{
-			Title:      rentedCopyPtr.Book.Title,
-			Author:     rentedCopyPtr.Book.Author,
-			CopyNumber: rentedCopyPtr.CopyNumber,
-			RentStatus: rentedCopyPtr.Status,
+			Title:      copyPtr.Book.Title,
+			Author:     copyPtr.Book.Author,
+			CopyNumber: copyPtr.CopyNumber,
+			RentStatus: copyPtr.Status,
 		},
 	}
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Summary Show All Book
-// @Description Show All Book in the library
+// @Summary Show All Books
+// @Description Show All Books in the library
 // @Tags books
 // @Produce json
 // @Security JWT
 // @Success 200 {object} entity.ShowBooksResponse
 // @Router /books [get]
 // @Failure 500 {object}  entity.ErrorMessage
-func (bs *bookHandler) ShowBooks(c echo.Context) error {
-	var bookCopies []entity.BookCopy
-	bookCopies, err := bs.br.FindAllBook()
+func (bh *bookHandler) ShowBooks(c echo.Context) error {
+	// get all books
+	bookCopiesPtr, err := bh.bs.GetAllBooks()
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "couldn't get books")
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprint(err))
 	}
 
+	// define and send response
 	var res []entity.ShowBooksResponse
 	var copyResponse entity.ShowBooksResponse
-	for _, copy := range bookCopies {
+	for _, copy := range *bookCopiesPtr {
 		copyResponse = entity.ShowBooksResponse{
 			ISBN:       copy.Book.ISBN,
 			Title:      copy.Book.Title,

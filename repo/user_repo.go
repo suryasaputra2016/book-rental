@@ -10,7 +10,7 @@ type UserRepo interface {
 	FindUserByID(id int) (*entity.User, error)
 	FindUserByEmail(email string) (*entity.User, error)
 	AddUser(userPtr *entity.User) error
-	EditUser(userPtr *entity.User) (*entity.User, error)
+	EditUser(userPtr *entity.User) error
 }
 
 // user repository implementation with database connection
@@ -52,10 +52,10 @@ func (ur *userRepo) AddUser(userPtr *entity.User) error {
 }
 
 // edit user in database
-func (ur *userRepo) EditUser(userPtr *entity.User) (*entity.User, error) {
+func (ur *userRepo) EditUser(userPtr *entity.User) error {
 	result := ur.db.Save(userPtr)
 	if result.Error != nil {
-		return nil, result.Error
+		return result.Error
 	}
-	return userPtr, nil
+	return nil
 }

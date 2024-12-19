@@ -10,11 +10,12 @@ import (
 	"github.com/suryasaputra2016/book-rental/services"
 )
 
+// rent handler interface
 type RentHandler interface {
 	ShowRents(echo.Context) error
 }
 
-// user repository implementation with database connection
+// rent handler implementation with rent service
 type rentHandler struct {
 	rs services.RentService
 }

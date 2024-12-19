@@ -14,7 +14,7 @@ type RentBookResponse struct {
 	RentedBook RentedBook       `json:"rented_book" validate:"required, rented_book"`
 }
 
-// book rental data
+// rented book data
 type RentedBook struct {
 	Title        string `json:"title" validate:"required, title"`
 	Author       string `json:"author" validate:"required, author"`
@@ -24,13 +24,13 @@ type RentedBook struct {
 	RentStatus   string `json:"rent_status" validate:"required, rent_status"`
 }
 
-// returned book response dto
+// return book response dto
 type ReturnBookResponse struct {
 	Message      string       `json:"message" validate:"required, message"`
 	ReturnedBook ReturnedBook `json:"returned_book" validate:"required, returned_book"`
 }
 
-// return book request
+// return book request dto
 type ReturnBookRequest struct {
 	ISBN       string `json:"isbn" validate:"required, isbn"`
 	Title      string `json:"title" validate:"required, title"`
@@ -38,7 +38,7 @@ type ReturnBookRequest struct {
 	CopyNumber int    `json:"copy_number" validate:"required, copy_number"`
 }
 
-// book rental data
+// returned book data
 type ReturnedBook struct {
 	Title      string `json:"title" validate:"required, title"`
 	Author     string `json:"author" validate:"required, author"`
@@ -46,7 +46,7 @@ type ReturnedBook struct {
 	RentStatus string `json:"rent_status" validate:"required, rent_status"`
 }
 
-// show book response
+// show book response dto
 type ShowBooksResponse struct {
 	ISBN       string  `json:"isbn" validate:"required, isbn"`
 	Title      string  `json:"title" validate:"required, title"`

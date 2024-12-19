@@ -6,17 +6,7 @@ import (
 	"unicode"
 )
 
-// test email and password
-func IsEmailandPasswordFine(email, password string) error {
-	if err := IsEmailStringValid(email); err != nil {
-		return err
-	}
-	err := IsPasswordGood(password)
-	return err
-
-}
-
-// IsEmailStringValid returns boolean of whether the string is in email format
+// IsEmailStringValid checks if email is well formatted
 func IsEmailStringValid(email string) error {
 	emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
 	if !emailRegex.MatchString(email) {
@@ -25,7 +15,7 @@ func IsEmailStringValid(email string) error {
 	return nil
 }
 
-// IsPasswordGood returns booleans of good password conditions
+// IsPasswordGood checks if password is good
 func IsPasswordGood(password string) error {
 	var containNumber, containUpperCase, containPunctuation, eightOrMore bool
 	index := 0

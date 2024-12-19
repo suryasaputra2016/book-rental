@@ -5,24 +5,25 @@ import (
 	"gorm.io/gorm"
 )
 
-// book repository interface
+// rent repository interface
 type RentRepo interface {
-	AddRentHistory(*entity.RentalHistory) error
+	AddRentHistory(rentPtr *entity.RentalHistory) error
 	FindRentsByUserID(userID int) (*[]entity.Rent, error)
-	EditRents(*[]entity.Rent) (*[]entity.Rent, error)
-	EditRent(*entity.Rent) (*entity.Rent, error)
+	EditRents(rentsPtr *[]entity.Rent) error
+	EditRent(rentPtr *entity.Rent) error
 }
 
-// book repository implementation with database connection
+// rent repository implementation with database connection
 type rentRepo struct {
 	db *gorm.DB
 }
 
-// NewBookRepo returns new book repository implementation
+// NewRentRepo takes database connection and returns new book repository implementation
 func NewRentRepo(db *gorm.DB) *rentRepo {
 	return &rentRepo{db: db}
 }
 
+// AddRentHistory inserts new rent history to database
 func (rr *rentRepo) AddRentHistory(rentPtr *entity.RentalHistory) error {
 	result := rr.db.Create(rentPtr)
 	if result.Error != nil {
@@ -31,6 +32,7 @@ func (rr *rentRepo) AddRentHistory(rentPtr *entity.RentalHistory) error {
 	return nil
 }
 
+// FindRentsByUserID get user by id
 func (rr *rentRepo) FindRentsByUserID(userID int) (*[]entity.Rent, error) {
 	var rentPtr = new([]entity.Rent)
 	result := rr.db.Preload("BookCopy.Book").Where("user_id = ?", userID).Find(rentPtr)
@@ -40,18 +42,20 @@ func (rr *rentRepo) FindRentsByUserID(userID int) (*[]entity.Rent, error) {
 	return rentPtr, nil
 }
 
-func (rr *rentRepo) EditRents(rentPtr *[]entity.Rent) (*[]entity.Rent, error) {
-	result := rr.db.Save(rentPtr)
+// EditRents updates multiple rent rows on database
+func (rr *rentRepo) EditRents(rentsPtr *[]entity.Rent) error {
+	result := rr.db.Save(rentsPtr)
 	if result.Error != nil {
-		return nil, result.Error
+		return result.Error
 	}
-	return rentPtr, nil
+	return nil
 }
 
-func (rr *rentRepo) EditRent(rentPtr *entity.Rent) (*entity.Rent, error) {
+// EditRent updates single rent row on database
+func (rr *rentRepo) EditRent(rentPtr *entity.Rent) error {
 	result := rr.db.Save(rentPtr)
 	if result.Error != nil {
-		return nil, result.Error
+		return result.Error
 	}
-	return rentPtr, nil
+	return nil
 }

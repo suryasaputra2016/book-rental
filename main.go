@@ -40,7 +40,8 @@ func main() {
 	rentHandler := handlers.NewRentHandler(rentalService)
 
 	bookRepo := repo.NewBookRepo(db)
-	bookHandler := handlers.NewBookHandler(bookRepo, userRepo, rentalRepo)
+	bookService := services.NewBookService(userRepo, rentalRepo, bookRepo)
+	bookHandler := handlers.NewBookHandler(bookService)
 
 	e := echo.New()
 
@@ -60,8 +61,8 @@ func main() {
 	e.PUT("/topup", userHandler.Topup, middlewares.Authorization())
 	e.GET("/rents", rentHandler.ShowRents, middlewares.Authorization())
 	e.GET("/books", bookHandler.ShowBooks)
-	e.POST("/books/rent", bookHandler.RentBook, middlewares.Authorization())
-	e.POST("/books/return", bookHandler.ReturnBook, middlewares.Authorization())
+	e.POST("/books/rent", bookHandler.RentABook, middlewares.Authorization())
+	e.POST("/books/return", bookHandler.ReturnABook, middlewares.Authorization())
 
 	// start server
 	e.Logger.Fatal(e.Start(utils.GetPort()))

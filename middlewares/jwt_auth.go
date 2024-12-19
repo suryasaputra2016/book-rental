@@ -17,21 +17,21 @@ type jwtCustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-// GetUserEmail accept echo context and return email data from jwt encoded token
+// GetUserEmail accepts echo context and returns email data from jwt encoded token
 func GetUserEmail(c interface{}) string {
 	user := c.(*jwt.Token)
 	claims := user.Claims.(*jwtCustomClaims)
 	return claims.Email
 }
 
-// GetUserID accept echo context and return id data from jwt encoded token
+// GetUserID accepts echo context and returns id data from jwt encoded token
 func GetUserID(c interface{}) int {
 	user := c.(*jwt.Token)
 	claims := user.Claims.(*jwtCustomClaims)
 	return claims.ID
 }
 
-// GenerateTokenString generate token string with custom claims and return encoded token and error
+// GenerateTokenString generates token string with custom claims and returns encoded token and error
 func GenerateTokenString(id int, email string) (string, error) {
 	// Set custom claim
 	claims := &jwtCustomClaims{
@@ -49,7 +49,7 @@ func GenerateTokenString(id int, email string) (string, error) {
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 }
 
-// Authorizition return middleware jwt authorization
+// Authorization returns middleware jwt authorization
 func Authorization() echo.MiddlewareFunc {
 	return echojwt.WithConfig(
 		echojwt.Config{

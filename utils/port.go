@@ -6,7 +6,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-// func getPort return port
+// func getPort returns port
 func GetPort() string {
 	port := os.Getenv("PORT")
 	if port == "" {

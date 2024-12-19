@@ -11,8 +11,8 @@ import (
 type BookRepo interface {
 	FindBookByTitleAuthor(title, author string) (*entity.Book, error)
 	FindAvailableBookByTitleAuthor(title, author string) (*entity.Book, error)
-	FindAllBook() ([]entity.BookCopy, error)
-	EditBookCopy(bookCopyPtr *entity.BookCopy) (*entity.BookCopy, error)
+	FindAllBook() (*[]entity.BookCopy, error)
+	EditBookCopy(bookCopyPtr *entity.BookCopy) error
 }
 
 // book repository implementation with database connection
@@ -20,12 +20,12 @@ type bookRepo struct {
 	db *gorm.DB
 }
 
-// NewBookRepo returns new book repository implementation
+// NewBookRepo takes database connection and returns new book repository implementation
 func NewBookRepo(db *gorm.DB) *bookRepo {
 	return &bookRepo{db: db}
 }
 
-// find book by title and author
+// FindBookByTitleAuthor gets book by title and author
 func (br bookRepo) FindBookByTitleAuthor(title, author string) (*entity.Book, error) {
 
 	var bookPtr = new(entity.Book)
@@ -39,6 +39,7 @@ func (br bookRepo) FindBookByTitleAuthor(title, author string) (*entity.Book, er
 	return bookPtr, nil
 }
 
+// FindAvailableBookByTitleAuthor gets available book by title and author
 func (br bookRepo) FindAvailableBookByTitleAuthor(title, author string) (*entity.Book, error) {
 	bookPtr, err := br.FindBookByTitleAuthor(title, author)
 	if err != nil {
@@ -57,21 +58,22 @@ func (br bookRepo) FindAvailableBookByTitleAuthor(title, author string) (*entity
 	return bookPtr, nil
 }
 
-func (br bookRepo) FindAllBook() ([]entity.BookCopy, error) {
+// FindAllBook gets all books from the database
+func (br bookRepo) FindAllBook() (*[]entity.BookCopy, error) {
 	var bookCopies []entity.BookCopy
 	result := br.db.Preload("Book").Order("id").Find(&bookCopies)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	return bookCopies, nil
+	return &bookCopies, nil
 }
 
-// edit bookcopy in database
-func (br *bookRepo) EditBookCopy(bookCopyPtr *entity.BookCopy) (*entity.BookCopy, error) {
+// EditBookCopy updates book copy in database
+func (br *bookRepo) EditBookCopy(bookCopyPtr *entity.BookCopy) error {
 	result := br.db.Model(bookCopyPtr).Select("status").Save(bookCopyPtr)
 	if result.Error != nil {
-		return nil, result.Error
+		return result.Error
 	}
-	return bookCopyPtr, nil
+	return nil
 }

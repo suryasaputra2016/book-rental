@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// ConnectDB connect to postgres databse using gorm and return db connection
+// ConnectDB connects to postgres database using gorm and returns db connection
 func ConnectDB() *gorm.DB {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai",
 		os.Getenv("DB_HOST"),
@@ -21,6 +21,7 @@ func ConnectDB() *gorm.DB {
 		os.Getenv("DB_PORT"),
 	)
 
+	// opean database connection
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
@@ -33,7 +34,7 @@ func ConnectDB() *gorm.DB {
 	return db
 }
 
-// migrateDatabase do database migration
+// migrateDatabase migrate database
 func migrateDatabase(db *gorm.DB) {
 	fmt.Println("Running migration")
 	err := db.AutoMigrate(

@@ -39,7 +39,7 @@ func (rs *rentService) GetRents(userID int) (*[]entity.Rent, error) {
 		}
 	}
 	if i > 0 {
-		if rentsPtr, err = rs.rr.EditRents(rentsPtr); err != nil {
+		if err = rs.rr.EditRents(rentsPtr); err != nil {
 			return nil, fmt.Errorf("getting rents: %w", err)
 		}
 	}
