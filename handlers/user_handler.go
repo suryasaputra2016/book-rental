@@ -8,6 +8,7 @@ import (
 	"github.com/suryasaputra2016/book-rental/entity"
 	"github.com/suryasaputra2016/book-rental/middlewares"
 	"github.com/suryasaputra2016/book-rental/services"
+	"github.com/suryasaputra2016/book-rental/utils"
 )
 
 // user handler interface
@@ -33,8 +34,8 @@ func NewUserHandler(us services.UserService) *userHandler {
 // @Tags user
 // @Accept json
 // @Produce json
-// @Param register-data body entity.CreateUserRequest true "register request"
-// @Success 201 {object} entity.CreateUserRepsonse
+// @Param register-data body entity.RegisterRequest true "register request"
+// @Success 201 {object} entity.RegisterRepsonse
 // @Router /register [post]
 // @Failure 400 {object} entity.ErrorMessage
 // @Failure 500 {object}  entity.ErrorMessage
@@ -132,11 +133,16 @@ func (uh *userHandler) Topup(c echo.Context) error {
 	}
 
 	// create invoice
-	// invoiceRes, err := utils.CreateInvoice(*userPtr, req.TopupAmount)
-	// if err != nil {
-	// 	return c.JSON(http.StatusInternalServerError, "Error while creating invoices")
-	// }
-	// return c.JSON(http.StatusOK, invoiceRes)
+	invoiceRes, err := utils.CreateInvoice(*userPtr, req.TopupAmount)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "creating invoice: error")
+	}
+
+	// send email
+	err = utils.SendMail("admin@bookrent.com", userPtr.Email, invoiceRes.ID, invoiceRes.InvoiceURL)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprint(err))
+	}
 
 	// update deposit
 	if err := uh.us.UpdateDeposit(userPtr, req.TopupAmount); err != nil {
@@ -146,6 +152,7 @@ func (uh *userHandler) Topup(c echo.Context) error {
 	// define and send response
 	res := entity.TopupResponse{
 		Message: "top up success",
+		Invoice: *invoiceRes,
 		UserData: entity.UserResponseData{
 			FirstName:     userPtr.FirstName,
 			LastName:      userPtr.LastName,

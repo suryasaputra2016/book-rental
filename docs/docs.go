@@ -30,14 +30,14 @@ const docTemplate = `{
                         "JWT": []
                     }
                 ],
-                "description": "Show All Book in the library",
+                "description": "Show All Books in the library",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "books"
                 ],
-                "summary": "Show All Book",
+                "summary": "Show All Books",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -222,7 +222,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.CreateUserRequest"
+                            "$ref": "#/definitions/entity.RegisterRequest"
                         }
                     }
                 ],
@@ -230,7 +230,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/entity.CreateUserRepsonse"
+                            "$ref": "#/definitions/entity.RegisterRepsonse"
                         }
                     },
                     "400": {
@@ -332,44 +332,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "entity.CreateUserRepsonse": {
-            "type": "object",
-            "required": [
-                "message",
-                "user_data"
-            ],
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "user_data": {
-                    "$ref": "#/definitions/entity.UserResponseData"
-                }
-            }
-        },
-        "entity.CreateUserRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "first_name",
-                "last_name",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
         "entity.ErrorMessage": {
             "type": "object",
             "required": [
@@ -377,6 +339,21 @@ const docTemplate = `{
             ],
             "properties": {
                 "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.Invoice": {
+            "type": "object",
+            "required": [
+                "id",
+                "invoice_url"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "invoice_url": {
                     "type": "string"
                 }
             }
@@ -407,6 +384,44 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.RegisterRepsonse": {
+            "type": "object",
+            "required": [
+                "message",
+                "user_data"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "user_data": {
+                    "$ref": "#/definitions/entity.UserResponseData"
+                }
+            }
+        },
+        "entity.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "first_name",
+                "last_name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 }
             }
@@ -456,6 +471,7 @@ const docTemplate = `{
                 "checkout_date",
                 "copy_number",
                 "due_date",
+                "end_date",
                 "rent_status",
                 "title"
             ],
@@ -470,6 +486,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "due_date": {
+                    "type": "string"
+                },
+                "end_date": {
                     "type": "string"
                 },
                 "rent_status": {
@@ -608,10 +627,14 @@ const docTemplate = `{
         "entity.TopupResponse": {
             "type": "object",
             "required": [
+                "invoice",
                 "message",
                 "user_data"
             ],
             "properties": {
+                "invoice": {
+                    "$ref": "#/definitions/entity.Invoice"
+                },
                 "message": {
                     "type": "string"
                 },

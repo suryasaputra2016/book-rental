@@ -121,7 +121,9 @@ func (bs *bookService) CheckBookReturnRequirements(title, author string, copyNum
 // ProcessBookReturn finishes book return process
 func (bs *bookService) ProcessBookReturn(rentPtr *entity.Rent) (*entity.BookCopy, error) {
 	// change rent status
+	today := time.Now()
 	rentPtr.Status = "finished"
+	rentPtr.EndDate = &today
 	if err := bs.rr.EditRent(rentPtr); err != nil {
 		return nil, fmt.Errorf("processing book return: %w", err)
 	}

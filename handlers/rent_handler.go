@@ -20,6 +20,7 @@ type rentHandler struct {
 	rs services.RentService
 }
 
+// NewRentHandler takes rent service and returns new rent handler
 func NewRentHandler(rs services.RentService) *rentHandler {
 	return &rentHandler{rs: rs}
 }
@@ -43,19 +44,27 @@ func (rh *rentHandler) ShowRents(c echo.Context) error {
 	// define and send response
 	var rentedBooks []entity.RentedBook
 	for _, rent := range *rentsPtr {
+		var endDate string
+		if rent.EndDate != nil {
+			endDate = rent.EndDate.Format("2006-01-02")
+		} else {
+			endDate = ""
+		}
+
 		rentedBook := entity.RentedBook{
 			Title:        rent.BookCopy.Book.Title,
 			Author:       rent.BookCopy.Book.Author,
 			CopyNumber:   rent.BookCopy.CopyNumber,
 			CheckoutDate: rent.StartDate.Format("2006-01-02"),
 			DueDate:      rent.DueDate.Format("2006-01-02"),
+			EndDate:      endDate,
 			RentStatus:   rent.Status,
 		}
 		rentedBooks = append(rentedBooks, rentedBook)
 	}
 
 	res := entity.ShowRentsResponse{
-		Message:     "Books currently being rented",
+		Message:     "Rental Activity",
 		RentedBooks: rentedBooks,
 	}
 

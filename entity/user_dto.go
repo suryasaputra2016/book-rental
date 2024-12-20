@@ -40,4 +40,8 @@ type TopupRequest struct {
 }
 
 // top up request dto
-type TopupResponse RegisterRepsonse
+type TopupResponse struct {
+	Message  string           `json:"message" validate:"required, message"`
+	Invoice  Invoice          `json:"invoice" validate:"required, invoice"`
+	UserData UserResponseData `json:"user_data" validate:"required, user_data"`
+}

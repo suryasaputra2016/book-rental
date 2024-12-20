@@ -21,6 +21,7 @@ type RentedBook struct {
 	CopyNumber   int    `json:"copy_number" validate:"required, copy_number"`
 	CheckoutDate string `json:"checkout_date" validate:"required, checkout_date"`
 	DueDate      string `json:"due_date" validate:"required, due_date"`
+	EndDate      string `json:"end_date" validate:"required, end_date"`
 	RentStatus   string `json:"rent_status" validate:"required, rent_status"`
 }
 

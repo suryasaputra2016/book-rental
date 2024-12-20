@@ -1,37 +1,21 @@
 basePath: /
 definitions:
-  entity.CreateUserRepsonse:
-    properties:
-      message:
-        type: string
-      user_data:
-        $ref: '#/definitions/entity.UserResponseData'
-    required:
-    - message
-    - user_data
-    type: object
-  entity.CreateUserRequest:
-    properties:
-      email:
-        type: string
-      first_name:
-        type: string
-      last_name:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - first_name
-    - last_name
-    - password
-    type: object
   entity.ErrorMessage:
     properties:
       error:
         type: string
     required:
     - error
+    type: object
+  entity.Invoice:
+    properties:
+      id:
+        type: string
+      invoice_url:
+        type: string
+    required:
+    - id
+    - invoice_url
     type: object
   entity.LoginRequest:
     properties:
@@ -52,6 +36,32 @@ definitions:
     required:
     - message
     - token
+    type: object
+  entity.RegisterRepsonse:
+    properties:
+      message:
+        type: string
+      user_data:
+        $ref: '#/definitions/entity.UserResponseData'
+    required:
+    - message
+    - user_data
+    type: object
+  entity.RegisterRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
     type: object
   entity.RentBookRequest:
     properties:
@@ -89,6 +99,8 @@ definitions:
         type: integer
       due_date:
         type: string
+      end_date:
+        type: string
       rent_status:
         type: string
       title:
@@ -98,6 +110,7 @@ definitions:
     - checkout_date
     - copy_number
     - due_date
+    - end_date
     - rent_status
     - title
     type: object
@@ -189,11 +202,14 @@ definitions:
     type: object
   entity.TopupResponse:
     properties:
+      invoice:
+        $ref: '#/definitions/entity.Invoice'
       message:
         type: string
       user_data:
         $ref: '#/definitions/entity.UserResponseData'
     required:
+    - invoice
     - message
     - user_data
     type: object
@@ -228,7 +244,7 @@ info:
 paths:
   /books:
     get:
-      description: Show All Book in the library
+      description: Show All Books in the library
       produces:
       - application/json
       responses:
@@ -242,7 +258,7 @@ paths:
             $ref: '#/definitions/entity.ErrorMessage'
       security:
       - JWT: []
-      summary: Show All Book
+      summary: Show All Books
       tags:
       - books
   /books/rent:
@@ -350,14 +366,14 @@ paths:
         name: register-data
         required: true
         schema:
-          $ref: '#/definitions/entity.CreateUserRequest'
+          $ref: '#/definitions/entity.RegisterRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/entity.CreateUserRepsonse'
+            $ref: '#/definitions/entity.RegisterRepsonse'
         "400":
           description: Bad Request
           schema:

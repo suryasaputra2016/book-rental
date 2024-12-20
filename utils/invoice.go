@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -16,7 +17,7 @@ func CreateInvoice(user entity.User, topupAmount float32) (*entity.Invoice, erro
 	bodyRequest := map[string]interface{}{
 		"external_id":      "1",
 		"amount":           topupAmount,
-		"description":      "Top Up Deposit Amount of $s, $s.",
+		"description":      fmt.Sprintf("Top Up Deposit Amount of %s, %s.", user.LastName, user.FirstName),
 		"invoice_duration": 86400,
 		"customer": map[string]interface{}{
 			"name":  user.LastName + ", " + user.FirstName,
