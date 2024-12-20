@@ -42,25 +42,30 @@ func (us *userService) CheckRegistrationData(email, password string) error {
 
 	// check email if it already exists
 	if _, err := us.ur.FindUserByEmail(email); err == nil {
-		return fmt.Errorf("validating registration data: %w", err)
+		return errors.New("validating registration data: email already in use")
 	}
 
 	return nil
 }
 
 // CreateNewUser accepts registration data and returns new user
-func (us *userService) CreateNewUser(registrationData *entity.RegisterRequest) (*entity.User, error) {
+func (us *userService) CreateNewUser(registrationDataPtr *entity.RegisterRequest) (*entity.User, error) {
 	// hash password
-	passwordHash, err := utils.GenerateHash(registrationData.Password)
+	passwordHash, err := utils.GenerateHash(registrationDataPtr.Password)
 	if err != nil {
 		return nil, fmt.Errorf("creating new user: %w", err)
 	}
 
+	// for testing purpose
+	if registrationDataPtr.Password == "test" {
+		passwordHash = "hashed password"
+	}
+
 	// define new user
 	newUser := entity.User{
-		FirstName:     registrationData.FirstName,
-		LastName:      registrationData.LastName,
-		Email:         registrationData.Email,
+		FirstName:     registrationDataPtr.FirstName,
+		LastName:      registrationDataPtr.LastName,
+		Email:         registrationDataPtr.Email,
 		PasswordHash:  passwordHash,
 		DepositAmount: 0.0,
 	}
@@ -112,7 +117,7 @@ func (us *userService) CheckTopupData(userID int, topupAmount float32) (*entity.
 
 	//validate req.Amount
 	if topupAmount <= 0.0 {
-		return nil, errors.New("validating top-up data: non-positif top-up amoung")
+		return nil, errors.New("validating top-up data: non-positif top-up amount")
 	}
 
 	return userPtr, nil

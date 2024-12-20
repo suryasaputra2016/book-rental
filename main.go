@@ -28,20 +28,18 @@ import (
 // @host https://*****.herokuapp.com
 // @BasePath /
 func main() {
-	// configure database, user repo, and user service
+	// database
 	db := config.ConnectDB()
 
+	// repositories
 	userRepo := repo.NewUserRepo(db)
-	userService := services.NewUserService(userRepo)
-	userHandler := handlers.NewUserHandler(userService)
-
 	rentalRepo := repo.NewRentRepo(db)
-	rentalService := services.NewRentService(rentalRepo)
-	rentHandler := handlers.NewRentHandler(rentalService)
-
 	bookRepo := repo.NewBookRepo(db)
-	bookService := services.NewBookService(userRepo, rentalRepo, bookRepo)
-	bookHandler := handlers.NewBookHandler(bookService)
+
+	// handlers
+	userHandler := handlers.NewUserHandler(services.NewUserService(userRepo))
+	rentHandler := handlers.NewRentHandler(services.NewRentService(rentalRepo))
+	bookHandler := handlers.NewBookHandler(services.NewBookService(userRepo, rentalRepo, bookRepo))
 
 	e := echo.New()
 

@@ -22,7 +22,7 @@ func NewUserRepo(db *gorm.DB) *userRepo {
 	return &userRepo{db: db}
 }
 
-// find user with id
+// FindUserByID gets user with id
 func (ur *userRepo) FindUserByID(id int) (*entity.User, error) {
 	var userPtr = new(entity.User)
 	result := ur.db.First(userPtr, id)
@@ -32,7 +32,7 @@ func (ur *userRepo) FindUserByID(id int) (*entity.User, error) {
 	return userPtr, nil
 }
 
-// find user with email
+// FindUserByEmail gets user with email
 func (ur *userRepo) FindUserByEmail(email string) (*entity.User, error) {
 	var userPtr = new(entity.User)
 	result := ur.db.Where("email = ?", email).First(userPtr)
@@ -42,7 +42,7 @@ func (ur *userRepo) FindUserByEmail(email string) (*entity.User, error) {
 	return userPtr, nil
 }
 
-// add user to database
+// AddUser inserts user to database
 func (ur *userRepo) AddUser(userPtr *entity.User) error {
 	result := ur.db.Create(userPtr)
 	if result.Error != nil {
@@ -51,7 +51,7 @@ func (ur *userRepo) AddUser(userPtr *entity.User) error {
 	return nil
 }
 
-// edit user in database
+// EditUser updates user in database
 func (ur *userRepo) EditUser(userPtr *entity.User) error {
 	result := ur.db.Save(userPtr)
 	if result.Error != nil {

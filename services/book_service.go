@@ -97,6 +97,8 @@ func (bs *bookService) CheckBookReturnRequirements(title, author string, copyNum
 		return nil, fmt.Errorf("checking book return requirements: %w", err)
 	}
 
+	fmt.Printf("\n\n\n%v\n\n\n", *rentsPtr)
+
 	// check if the copy is rented
 	var i int
 	found := false
@@ -104,13 +106,13 @@ func (bs *bookService) CheckBookReturnRequirements(title, author string, copyNum
 		if (*rentsPtr)[i].BookCopy.Book.Title == title &&
 			(*rentsPtr)[i].BookCopy.Book.Author == author &&
 			(*rentsPtr)[i].BookCopy.CopyNumber == copyNumber &&
-			((*rentsPtr)[i].BookCopy.Status == "ongoing" || (*rentsPtr)[i].BookCopy.Status == "overdue") {
+			((*rentsPtr)[i].Status == "ongoing" || (*rentsPtr)[i].BookCopy.Status == "overdue") {
 			found = true
 			break
 		}
 	}
 	if !found {
-		return nil, fmt.Errorf("checking book return requirements: %w", err)
+		return nil, errors.New("checking book return requirements: copy not found in rents")
 	}
 
 	return &(*rentsPtr)[i], nil

@@ -7,6 +7,7 @@ import (
 	"github.com/suryasaputra2016/book-rental/entity"
 )
 
+// define mock user repository
 type UserRepoMock struct {
 	Mock mock.Mock
 }
@@ -15,23 +16,43 @@ func (m *UserRepoMock) FindUserByID(id int) (*entity.User, error) {
 	res := m.Mock.Called(id)
 
 	if res.Get(0) == nil {
-		return nil, errors.New("error")
+		return nil, errors.New("user id not found")
 	}
 
-	product := res.Get(0).(entity.User)
-	return &product, nil
+	user := res.Get(0).(entity.User)
+	return &user, nil
 }
 
-// find user with email
-func (ur *UserRepoMock) FindUserByEmail(email string) (*entity.User, error) {
-	return nil, nil
+// FindUserByEmail gets user with email mock
+func (m *UserRepoMock) FindUserByEmail(email string) (*entity.User, error) {
+	res := m.Mock.Called(email)
+
+	if res.Get(0) == nil {
+		return nil, errors.New("user email not found")
+	}
+
+	user := res.Get(0).(entity.User)
+	return &user, nil
 }
 
-// add user to database
-func (ur *UserRepoMock) AddUser(userPtr *entity.User) error {
+// AddUser inserts user to database mock
+func (m *UserRepoMock) AddUser(userPtr *entity.User) error {
+	res := m.Mock.Called(userPtr)
+
+	if res.Get(0) == nil {
+		return errors.New("adding user failed")
+	}
+
 	return nil
 }
 
-func (ur *UserRepoMock) EditUser(userPtr *entity.User) error {
+// EditUser updates user in database mock
+func (m *UserRepoMock) EditUser(userPtr *entity.User) error {
+	res := m.Mock.Called(userPtr)
+
+	if res.Get(0) == nil {
+		return errors.New("edit user failed")
+	}
+
 	return nil
 }
