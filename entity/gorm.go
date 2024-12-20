@@ -41,7 +41,7 @@ type Book struct {
 type BookCopy struct {
 	ID              uint `gorm:"primaryKey"`
 	BookID          uint `gorm:"not null"`
-	UserID          uint
+	RentID          uint
 	CopyNumber      int    `gorm:"not null"`
 	Status          string `gorm:"type:varchar(10);not null; default:available"` //available, rented, in repair
 	RentalHistories []RentalHistory

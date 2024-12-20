@@ -60,7 +60,7 @@ func (bh *bookHandler) RentABook(c echo.Context) error {
 	}
 
 	// record in rent history
-	if err = bh.bs.StoreRentHistory(uint(userID), bookPtr.BookCopies[0].ID); err != nil {
+	if err = bh.bs.StoreRentHistory(uint(userID), bookPtr.BookCopies[0].ID, "take"); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprint(err))
 	}
 
@@ -93,7 +93,7 @@ func (bh *bookHandler) RentABook(c echo.Context) error {
 // @Param return-book-data body entity.ReturnBookRequest true "returnbook request"
 // @Security JWT
 // @Success 200 {object} entity.ReturnBookResponse
-// @Router /books/return [post]
+// @Router /books/return [put]
 // @Failure 400 {object} entity.ErrorMessage
 // @Failure 500 {object}  entity.ErrorMessage
 func (bh *bookHandler) ReturnABook(c echo.Context) error {
@@ -117,7 +117,7 @@ func (bh *bookHandler) ReturnABook(c echo.Context) error {
 	}
 
 	// record in rent history
-	if err = bh.bs.StoreRentHistory(uint(userID), copyPtr.ID); err != nil {
+	if err = bh.bs.StoreRentHistory(uint(userID), copyPtr.ID, "return"); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprint(err))
 	}
 

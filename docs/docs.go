@@ -106,7 +106,7 @@ const docTemplate = `{
             }
         },
         "/books/return": {
-            "post": {
+            "put": {
                 "security": [
                     {
                         "JWT": []
@@ -672,7 +672,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "https://*****.herokuapp.com",
+	Host:             "https://bookrent-2007386bafd9.herokuapp.com",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "BookRental",

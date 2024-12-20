@@ -16,7 +16,7 @@ type BookService interface {
 	CheckBookReturnRequirements(title, author string, copyNumber, userID int) (*entity.Rent, error)
 	ProcessBookReturn(rentPtr *entity.Rent) (*entity.BookCopy, error)
 	GetAllBooks() (*[]entity.BookCopy, error)
-	StoreRentHistory(userID uint, bookCopyID uint) error
+	StoreRentHistory(userID uint, bookCopyID uint, status string) error
 }
 
 // user service implementation with use repo
@@ -55,7 +55,7 @@ func (bs *bookService) CheckBookRentalRequirements(title, author string, userID 
 
 // ProcessBookRental finishes book rental process
 func (bs *bookService) ProcessBookRental(bookPtr *entity.Book, userPtr *entity.User) (*entity.Rent, error) {
-	// flag the copy as rented
+	// flag the copy as rented by user
 	rentedCopyPtr := &bookPtr.BookCopies[0]
 	rentedCopyPtr.Status = "rented"
 	if err := bs.br.EditBookCopy(rentedCopyPtr); err != nil {
@@ -76,6 +76,7 @@ func (bs *bookService) ProcessBookRental(bookPtr *entity.Book, userPtr *entity.U
 	if err := bs.ur.EditUser(userPtr); err != nil {
 		return nil, fmt.Errorf("processing book rental: %w", err)
 	}
+
 	return &newRent, nil
 }
 
@@ -140,12 +141,12 @@ func (bs *bookService) ProcessBookReturn(rentPtr *entity.Rent) (*entity.BookCopy
 }
 
 // StoreRentHistory updates rental history
-func (bs *bookService) StoreRentHistory(userID uint, bookCopyID uint) error {
+func (bs *bookService) StoreRentHistory(userID uint, bookCopyID uint, status string) error {
 	// create rental history
 	newRentalHistory := entity.RentalHistory{
 		UserID:     userID,
 		BookCopyID: bookCopyID,
-		Type:       "take",
+		Type:       status,
 	}
 
 	// store in databse

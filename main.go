@@ -25,7 +25,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host https://*****.herokuapp.com
+// @host https://bookrent-2007386bafd9.herokuapp.com
 // @BasePath /
 func main() {
 	// database
@@ -60,7 +60,7 @@ func main() {
 	e.GET("/rents", rentHandler.ShowRents, middlewares.Authorization())
 	e.GET("/books", bookHandler.ShowBooks)
 	e.POST("/books/rent", bookHandler.RentABook, middlewares.Authorization())
-	e.POST("/books/return", bookHandler.ReturnABook, middlewares.Authorization())
+	e.PUT("/books/return", bookHandler.ReturnABook, middlewares.Authorization())
 
 	// start server
 	e.Logger.Fatal(e.Start(utils.GetPort()))

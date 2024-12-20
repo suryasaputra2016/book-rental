@@ -14,7 +14,7 @@
         },
         "version": "1.0"
     },
-    "host": "https://*****.herokuapp.com",
+    "host": "https://bookrent-2007386bafd9.herokuapp.com",
     "basePath": "/",
     "paths": {
         "/books": {
@@ -100,7 +100,7 @@
             }
         },
         "/books/return": {
-            "post": {
+            "put": {
                 "security": [
                     {
                         "JWT": []

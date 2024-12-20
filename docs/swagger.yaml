@@ -229,7 +229,7 @@ definitions:
     - first_name
     - last_name
     type: object
-host: https://*****.herokuapp.com
+host: https://bookrent-2007386bafd9.herokuapp.com
 info:
   contact:
     email: sayasuryasaputra@gmail.com
@@ -294,7 +294,7 @@ paths:
       tags:
       - books
   /books/return:
-    post:
+    put:
       consumes:
       - application/json
       description: Return One Book
