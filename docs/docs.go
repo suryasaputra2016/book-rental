@@ -25,11 +25,6 @@ const docTemplate = `{
     "paths": {
         "/books": {
             "get": {
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
                 "description": "Show All Books in the library",
                 "produces": [
                     "application/json"

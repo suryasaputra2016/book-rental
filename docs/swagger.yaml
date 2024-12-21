@@ -256,8 +256,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/entity.ErrorMessage'
-      security:
-      - JWT: []
       summary: Show All Books
       tags:
       - books

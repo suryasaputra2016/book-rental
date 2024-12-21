@@ -138,7 +138,6 @@ func (bh *bookHandler) ReturnABook(c echo.Context) error {
 // @Description Show All Books in the library
 // @Tags books
 // @Produce json
-// @Security JWT
 // @Success 200 {object} entity.ShowBooksResponse
 // @Router /books [get]
 // @Failure 500 {object}  entity.ErrorMessage
